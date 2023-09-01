@@ -1,0 +1,58 @@
+[*]
+[*] GTKWave Analyzer v3.3.66 (w)1999-2015 BSI
+[*] Sun Nov 28 21:01:56 2021
+[*]
+[dumpfile] "e:\dev\avr\v20211128\tb.vcd"
+[dumpfile_mtime] "Sun Nov 28 21:00:13 2021"
+[dumpfile_size] 119248
+[savefile] "e:\dev\avr\v20211128\tb.gtkw"
+[timestart] 0
+[size] 960 484
+[pos] -1 -1
+*-8.000000 420 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] tb.
+[sst_width] 197
+[signals_width] 183
+[sst_expanded] 1
+[sst_vpaned_height] 112
+@28
+tb.clock
+tb.clock_25
+@c00200
+-Iface
+@22
+tb.AVRCoreUnit.pc[15:0]
+tb.AVRCoreUnit.pdata[15:0]
+tb.AVRCoreUnit.address[15:0]
+tb.AVRCoreUnit.rdata[7:0]
+tb.AVRCoreUnit.dataw[7:0]
+@28
+tb.AVRCoreUnit.we
+@1401200
+-Iface
+@800200
+-DEBUG
+@22
+tb.AVRCoreUnit.__r16[7:0]
+tb.AVRCoreUnit.__r17[7:0]
+@1000200
+-DEBUG
+@28
+tb.AVRCoreUnit.tstate[2:0]
+@c00022
+tb.AVRCoreUnit.sreg[7:0]
+@28
+(0)tb.AVRCoreUnit.sreg[7:0]
+(1)tb.AVRCoreUnit.sreg[7:0]
+(2)tb.AVRCoreUnit.sreg[7:0]
+(3)tb.AVRCoreUnit.sreg[7:0]
+(4)tb.AVRCoreUnit.sreg[7:0]
+(5)tb.AVRCoreUnit.sreg[7:0]
+(6)tb.AVRCoreUnit.sreg[7:0]
+(7)tb.AVRCoreUnit.sreg[7:0]
+@1401200
+-group_end
+@23
+tb.AVRCoreUnit.ir[15:0]
+[pattern_trace] 1
+[pattern_trace] 0
