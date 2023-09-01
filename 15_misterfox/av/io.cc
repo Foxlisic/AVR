@@ -13,6 +13,10 @@ uint8_t AVR::get(uint16_t addr) {
         case 0x20: return bank;
         case 0x21: return videomode;
         case 0x22: return kb_code;
+        case 0x2C: return spi_data;
+        case 0x2D: return spi_st;
+        case 0x2E: return cur_x;
+        case 0x2F: return cur_y;
 
         // Остальная память
         default: return sram[A];
@@ -29,8 +33,13 @@ void AVR::put(uint16_t addr, uint8_t value) {
     if (A >= 0xF000) A += bank * 4096;
 
     switch (A) {
+
         case 0x20: bank = value; break;         // Указатель на банк памяти
         case 0x21: switch_vm(value); break;     // Видеорежим
+        case 0x2C: spi_cmd(value); break;       // SD-карта
+        case 0x2D: spi_st &= ~2; break;         // Сброс таймаута
+        case 0x2E: cur_x = value; break;        // Курсор X
+        case 0x2F: cur_y = value; break;        // Курсор Y
     }
 
     // Запись в память

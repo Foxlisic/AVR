@@ -20,6 +20,10 @@ enum PortsID {
     BANK    = 0x00, // RW
     VMODE   = 0x01, // RW
     KEYB    = 0x02, // R
+    SDCMD   = 0x0C, // RW
+    SDCTL   = 0x0D, // RW
+    CURX    = 0x0E,
+    CURY    = 0x0F,
 };
 
 // Список видеорежимов

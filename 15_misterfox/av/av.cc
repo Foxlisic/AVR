@@ -193,6 +193,12 @@ void AVR::frame() {
     if (target > 1000000) {
         target = 1000000;
     }
+
+    // Мигание курсора
+    cur_flash = (cur_flash < 25) ? cur_flash + 1 : 0;
+
+    // Обновить экран при каждом мигании
+    if ((cur_flash == 0 || cur_flash == 12) && videomode == 0) switch_vm(0);
 }
 
 // -----------------------------------------------------------------------------
@@ -219,7 +225,13 @@ void AVR::pchr(uint8_t ch) {
         int m = ansi[ch][i];
         for (int j = 0; j < 8; j++) {
 
-            int cl = m & (1 << (7-j)) ? fore : back;
+            int t = m;
+
+            // Подчеркивание
+            if (cur_x == loc_x && cur_y == loc_y && i >= 14 && cur_flash < 12)
+                t |= 0xFF;
+
+            int cl = t & (1 << (7-j)) ? fore : back;
             if (cl >= 0) pset(x + j, y + i, cl);
         }
     }

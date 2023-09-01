@@ -90,20 +90,29 @@ protected:
 public:
 
     // Открытые поля
-    int kb_code, mx, my, ms, mb;
-    int kb[256], kb_id = 0;
-    int fore = 0xFFFFFF, back = 0x000000;
-    int loc_x = 0, loc_y = 0;
-    int debug = 0;
+    int     kb_code, mx, my, ms, mb;
+    int     kb[256], kb_id = 0;
+    int     fore  = 0xFFFFFF, back = 0x000000;
+    int     loc_x = 0, loc_y = 0;
+    int     cur_x = 0, cur_y, cur_flash = 0;
+    int     debug = 0;
+    uint8_t bank  = 0, videomode = 0;
 
     // Память программ
     uint16_t*   program;      // Память программы
     uint8_t*    sram;         // Общая память, также включает регистры с портами (1 Mb)
     int         map[65536];
 
+    // Информация о SPI
+    uint8_t     spi_data, spi_st = 2, spi_status, spi_command, spi_crc, spi_resp;
+    uint32_t    spi_arg, spi_lba;
+    uint16_t    spi_phase;
+    uint8_t     spi_sector[512];
+    FILE*       spi_file;
+
+    // Процессор
     int         pc, cpu_halt, require_halt;
     uint16_t    opcode, command, cycles;
-    uint8_t     bank = 0, videomode = 0;
     uint32_t    target = 1000000;
     CPUFlags    flag;
 
@@ -134,6 +143,7 @@ public:
     uint16_t    fetch() { uint16_t data = program[pc]; pc = (pc + 1) & 0xffff; return data; }
     void        interruptcall(int);
     void        frame();
+    void        spi_cmd(uint8_t data);
 
     // Установка флагов
     uint32_t    neg(unsigned int);
