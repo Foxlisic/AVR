@@ -1,8 +1,6 @@
 #ifndef __SD_MODULE
 #define __SD_MODULE
 
-#define SPI_DAT         8
-#define SPI_CMD         9
 #define SPI_CMD_INIT    1
 #define SPI_CMD_CE0     2
 #define SPI_CMD_CE1     3

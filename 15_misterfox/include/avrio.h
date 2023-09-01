@@ -17,13 +17,13 @@
 // Описания всех портов
 enum PortsID {
 
-    BANK    = 0x00, // RW
-    VMODE   = 0x01, // RW
-    KEYB    = 0x02, // R
-    SDCMD   = 0x0C, // RW
-    SDCTL   = 0x0D, // RW
-    CURX    = 0x0E,
-    CURY    = 0x0F,
+    BANK    = 0x00, // RW Банк памяти F000-FFFF
+    VMODE   = 0x01, // RW Видеорежим
+    KEYB    = 0x02, // R  Символ с клавиатуры
+    SDCMD   = 0x0C, // RW Чтение или прием байта SD
+    SDCTL   = 0x0D, // RW Команда 1=init, 2=ce0, 3-ce1
+    CURX    = 0x0E, // RW Курсор по X
+    CURY    = 0x0F, // RW Курсор по Y
 };
 
 // Список видеорежимов
