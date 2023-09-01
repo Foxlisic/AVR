@@ -9,10 +9,8 @@ ISR(INT1_vect) { } // KEYBOARD
 
 int main() {
 
-    heapvm;
-    outp(CURX, 2);
-
-    sd.read(0, vm);
+    sd.read (0, sector);
+    sd.write(0, sector);
 
     for(;;);
 }

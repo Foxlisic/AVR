@@ -141,7 +141,7 @@ void AVR::spi_cmd(uint8_t data) {
 
             } else if (spi_phase == 1) {
 
-                if (spi_data != 0xFE) {
+                if (data != 0xFE) {
                     printf("Illegal opcode (non FE)\n"); exit(1);
                 }
 
