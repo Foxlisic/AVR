@@ -160,13 +160,19 @@ void AVR::frame() {
     while (instr < target) {
 
         // Отладка
-        // printf("%04X: %04X\n", pc, program[pc]);
+        if (debug) {
 
-        // Вызов прерывания клавиатуры на протяжении всего фрейма
-        if (flag.i && kb_id) {
+            printf("%04X: %04X\n", 2*pc, program[pc]);
+            target = 100;
+        }
 
+        // Извлечь следующую клавишу
+        if (flag.i && kb_id > 0) {
+
+            kb_code = kb[0];
+            for (int i = 0; i < kb_id - 1; i++) kb[i] = kb[i+1];
             kb_id = (kb_id - 1) & 255;
-            kb_code = kb[kb_id];
+
             interruptcall(2);
         }
 
@@ -179,7 +185,7 @@ void AVR::frame() {
     TM = SDL_GetTicks() - TM;
 
     // Корректировать максимальную скорость
-    if (TM < frame_length) {
+    if (debug == 0 && TM < frame_length) {
         target = (target * frame_length) / (TM ? TM : 1);
     }
 

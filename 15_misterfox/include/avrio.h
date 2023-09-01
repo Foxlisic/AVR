@@ -17,8 +17,9 @@
 // Описания всех портов
 enum PortsID {
 
-    BANK             = 0x00, // RW
-    VMODE            = 0x01, // RW
+    BANK    = 0x00, // RW
+    VMODE   = 0x01, // RW
+    KEYB    = 0x02, // R
 };
 
 // Список видеорежимов

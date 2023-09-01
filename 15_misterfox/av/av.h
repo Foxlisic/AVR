@@ -94,6 +94,7 @@ public:
     int kb[256], kb_id = 0;
     int fore = 0xFFFFFF, back = 0x000000;
     int loc_x = 0, loc_y = 0;
+    int debug = 0;
 
     // Память программ
     uint16_t*   program;      // Память программы

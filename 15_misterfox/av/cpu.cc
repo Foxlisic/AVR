@@ -136,7 +136,7 @@ void AVR::interruptcall(int irq) {
 
     flag.i = 0;
     flag_to_byte();
-    push16(pc >> 1);
+    push16(pc);
     pc = 2 * irq;
 }
 
@@ -157,8 +157,13 @@ int AVR::step() {
         case NOP:
             break;
 
-        case WDR:
+        // Включение дебага
         case SLEEP:
+
+            debug = 1;
+            break;
+
+        case WDR:
         case BREAK:
 
             cpu_halt = 1;
