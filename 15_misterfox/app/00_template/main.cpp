@@ -1,11 +1,11 @@
 #include <avrio.h>
 
 // WARN: Если не используется, заглушку все равно оставить
-ISR(INT0_vect) { } // TIMER
-ISR(INT1_vect) { } // KEYBOARD
+ISR(INT0_vect) { eoi; } // 1 VSYNC
+ISR(INT1_vect) { eoi; } // 2 KEYBOARD
 
 int main() {
 
-    sei();
+    ei(3);
     for(;;);
 }

@@ -24,6 +24,7 @@ enum PortsID {
     SDCTL   = 0x0D, // RW Команда 1=init, 2=ce0, 3-ce1
     CURX    = 0x0E, // RW Курсор по X
     CURY    = 0x0F, // RW Курсор по Y
+    MASKS   = 0x10, // RW Маски прерывания
 };
 
 // Список видеорежимов
@@ -31,6 +32,13 @@ enum VideoModes {
 
     VM_80x25        = 0,
     VM_320x200      = 1,
+    VM_ZXSPECTRUM   = 2
+};
+
+enum IntrMasks {
+
+    irq_vsync   = 1,
+    irq_keyb    = 2,
 };
 
 // Чтение из порта
@@ -49,5 +57,6 @@ inline void outp(int port, unsigned char val) {
 #define bank(x)     outp(BANK, x)
 #define vmode(x)    outp(VMODE, x)
 #define eoi         outp(KEYB, 255)
+#define ei(x)       outp(MASKS, x); sei()
 
 #endif

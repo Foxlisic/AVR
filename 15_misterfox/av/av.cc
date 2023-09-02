@@ -116,14 +116,14 @@ void AVR::frame() {
             for (int i = 0; i < kb_id - 1; i++) kb[i] = kb[i+1];
             kb_id = (kb_id - 1) & 255;
 
-            interruptcall(2);
+            if (intr_mask & 2) interruptcall(2);
         }
 
         instr += step();
     }
 
     // TIMER IRQ
-    if (flag.i) interruptcall(1);
+    if (flag.i && (intr_mask & 1)) interruptcall(1);
 
     TM = SDL_GetTicks() - TM;
 

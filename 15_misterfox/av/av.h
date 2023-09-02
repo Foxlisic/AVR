@@ -115,7 +115,7 @@ public:
     char        ds_line[128];
 
     // Процессор
-    int         pc, cpu_halt, require_halt;
+    int         pc, cpu_halt, require_halt, intr_mask = 0;
     uint16_t    opcode, command, cycles;
     uint32_t    target = 1000000;
     CPUFlags    flag;

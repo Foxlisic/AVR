@@ -117,6 +117,7 @@ wire [ 7:0] data_i =
     address == 16'h22 ? kb_data_in  :
     address == 16'h2E ? curx        :
     address == 16'h2F ? cury        :
+    address == 16'h30 ? intmask     :
                         data_m1;
 
 // -----------------------------------------------------------------------------
@@ -160,6 +161,7 @@ reg [1:0]   spi_ctl;    // 0-PUT, 1-INIT, 2-CE0, 3-CE1
 reg         spi;        // Если 1, то команда отправлена
 reg         irq_ack;
 reg [2:0]   irq_queue;
+reg [2:0]   intmask;
 
 always @(posedge clock_25)
 begin
@@ -176,11 +178,15 @@ begin
         16'h2D: begin spi       <= 1; spi_ctl <= data_o; end
         16'h2E: begin cursor    <= data_o + 80*cury  ; curx <= data_o; end
         16'h2F: begin cursor    <= curx   + 80*data_o; cury <= data_o; end
+        16'h30: begin intmask   <= data_o; end
 
     endcase
 
+    // Прерывание от видеоадаптера, каждые 1/60 секунд
+    if (ga_int)  begin irq_queue[1] <= intmask[1]; end
+
     // Пришли новые данные от клавиатуры
-    if (kb_done) begin kb_data_in <= kb_data; irq_queue[2] <= 1'b1; end
+    if (kb_done) begin irq_queue[2] <= intmask[2]; kb_data_in <= kb_data; end
 
     // Предыдущее прерывание либо не было, либо уже отработало
     if (!irq_ack) begin
@@ -207,6 +213,7 @@ wire [ 7:0] char_data;
 wire [ 7:0] font_data;
 reg  [10:0] cursor;
 reg  [ 7:0] curx, cury;
+wire        ga_int;
 
 video U1
 (
@@ -219,6 +226,7 @@ video U1
     .b      (VGA_B),
     .hs     (VGA_HS),
     .vs     (VGA_VS),
+    .int    (ga_int),
 
     // Доступ к памяти
     .char_address   (char_address),

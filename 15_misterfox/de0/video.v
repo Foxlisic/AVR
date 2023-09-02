@@ -6,20 +6,21 @@ module video
     input   wire        clock,
 
     // Выходные данные
-    output  reg  [3:0]  r,       // 4 бит на красный
-    output  reg  [3:0]  g,       // 4 бит на зеленый
-    output  reg  [3:0]  b,       // 4 бит на синий
-    output  wire        hs,      // горизонтальная развертка
-    output  wire        vs,      // вертикальная развертка
+    output  reg  [3:0]  r,      // 4 бит на красный
+    output  reg  [3:0]  g,      // 4 бит на зеленый
+    output  reg  [3:0]  b,      // 4 бит на синий
+    output              hs,     // горизонтальная развертка
+    output              vs,     // вертикальная развертка
+    output              int,    // Срабатывает на x=0,y=0
 
     // Доступ к памяти
     output  reg  [16:0] char_address,
     output  reg  [11:0] font_address,
-    input   wire [ 7:0] char_data,
-    input   wire [ 7:0] font_data,
+    input        [ 7:0] char_data,
+    input        [ 7:0] font_data,
 
     // Внешний интерфейс
-    input   wire [10:0] cursor   // Положение курсора от 0 до 2047
+    input        [10:0] cursor   // Положение курсора от 0 до 2047
 );
 
 // ---------------------------------------------------------------------
@@ -34,8 +35,9 @@ localparam
     hz_back    = 48,  vt_back    = 35,
     hz_whole   = 800, vt_whole   = 449;
 
-assign hs = x  < (hz_back + hz_visible + hz_front); // NEG.
-assign vs = y >= (vt_back + vt_visible + vt_front); // POS.
+assign hs  = x  < (hz_back + hz_visible + hz_front); // NEG.
+assign vs  = y >= (vt_back + vt_visible + vt_front); // POS.
+assign int = (x == 0 && y == 0);
 // ---------------------------------------------------------------------
 wire        xmax = (x == hz_whole - 1);
 wire        ymax = (y == vt_whole - 1);

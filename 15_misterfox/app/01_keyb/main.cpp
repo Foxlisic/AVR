@@ -2,7 +2,6 @@
 
 int n = 0;
 
-ISR(INT0_vect) { }
 ISR(INT1_vect) {
 
     heapvm;
@@ -15,6 +14,6 @@ ISR(INT1_vect) {
 
 int main() {
 
-    sei();
+    ei(2);
     for(;;);
 }

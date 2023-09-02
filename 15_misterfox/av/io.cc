@@ -17,6 +17,7 @@ uint8_t AVR::get(uint16_t addr) {
         case 0x2D: return spi_st;
         case 0x2E: return cur_x;
         case 0x2F: return cur_y;
+        case 0x30: return intr_mask;
 
         // Остальная память
         default: return sram[A];
@@ -40,6 +41,7 @@ void AVR::put(uint16_t addr, uint8_t value) {
         case 0x2D: spi_st &= ~2; break;         // Сброс таймаута
         case 0x2E: cur_x = value; break;        // Курсор X
         case 0x2F: cur_y = value; break;        // Курсор Y
+        case 0x30: intr_mask = value; break;    // Маски прерываний
     }
 
     // Запись в память
