@@ -105,7 +105,10 @@ pll PLL0
 wire [15:0] pc, ir;
 wire [15:0] address;
 wire [ 7:0] data_o, data_i;
-wire        we;
+wire        we, read;
+
+// Учесть банки памяти
+wire [16:0] cpu_address = address;
 
 // Память программ 128K
 mem_prg M0
@@ -119,6 +122,10 @@ mem_prg M0
 mem_ram M1
 (
     .clock  (clock_100),
+    .a0     (cpu_address),
+    .q0     (data_i),
+    .d0     (data_o),
+    .w0     (we),
     .a1     (char_address),
     .q1     (char_data)
 );
@@ -159,6 +166,32 @@ video U1
     .char_data      (char_data),
     .font_data      (font_data),
     .cursor         (cursor)
+);
+
+// -----------------------------------------------------------------------------
+// ЦЕНТРАЛЬНЫЙ ПРОЦЕССОР
+// -----------------------------------------------------------------------------
+
+wire        intr = 1'b0;
+wire [ 2:0] vect = 3'h0;
+
+core COREAVR
+(
+    .clock      (clock_25),
+    .reset_n    (locked),
+    // Программная память
+    .pc         (pc),          // Программный счетчик
+    .ir         (ir),          // Инструкция из памяти
+    // Оперативная память
+    .address    (address),     // Указатель на память RAM (sram)
+    .data_i     (data_i),      // = memory[ address ]
+    .data_o     (data_o),      // Запись в память по address
+    .we         (we),          // Разрешение записи в память
+    // Внешнее прерывание #0..7
+    .intr       (intr),
+    .vect       (vect),
+    // Чтение из памяти
+    .read       (read)
 );
 
 endmodule

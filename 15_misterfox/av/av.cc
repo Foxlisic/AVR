@@ -48,25 +48,101 @@ AVR::~AVR() {
     free(program);
     free(sram);
 
+    if (dbg_file) fclose(dbg_file);
+
     SDL_DestroyWindow(sdl_window);
     SDL_Quit();
 }
 
 void AVR::load(int argc, char** argv) {
 
+    int i = 1;
+    while (i < argc) {
+
+        if (argv[i][0] == '-') {
+
+            switch (argv[i][1]) {
+
+                case 'd': debug = 1; target = 1000; break;
+            }
+        }
+        // Загрузка файла, если он задан
+        else {
+
+            FILE* fp = fopen(argv[i], "rb");
+            if (fp) {
+
+                fread(program, 2, 65536, fp);
+                fclose(fp);
+
+            } else {
+                printf("File not found\n");
+                exit(1);
+            }
+        }
+
+        i++;
+    }
+
     if (argc > 1) {
 
-        FILE* fp = fopen(argv[1], "rb");
-        if (fp) {
 
-            fread(program, 2, 65536, fp);
-            fclose(fp);
-
-        } else {
-            printf("File not found\n");
-            exit(1);
-        }
     }
+}
+
+// Один фрейм
+void AVR::frame() {
+
+    uint32_t instr = 0;
+
+    Uint32 TM = SDL_GetTicks();
+    while (instr < target) {
+
+        // Отладка
+        if (debug) {
+
+            if (dbg_file == NULL) {
+                dbg_file = fopen("debug.log", "w");
+            }
+
+            ds_decode(pc);
+            fprintf(dbg_file, "%05X | X=%04X Y=%04X Z=%04X | %s\n", 2*pc, get_X(), get_Y(), get_Z(), ds_line);
+            // target = 100;
+        }
+
+        // Извлечь следующую клавишу
+        if (flag.i && kb_id > 0) {
+
+            kb_code = kb[0];
+            for (int i = 0; i < kb_id - 1; i++) kb[i] = kb[i+1];
+            kb_id = (kb_id - 1) & 255;
+
+            interruptcall(2);
+        }
+
+        instr += step();
+    }
+
+    // TIMER IRQ
+    if (flag.i) interruptcall(1);
+
+    TM = SDL_GetTicks() - TM;
+
+    // Корректировать максимальную скорость
+    if (debug == 0 && TM < frame_length) {
+        target = (target * frame_length) / (TM ? TM : 1);
+    }
+
+    // Не более 25 Мгц
+    if (target > 1000000) {
+        target = 1000000;
+    }
+
+    // Мигание курсора
+    cur_flash = (cur_flash < 25) ? cur_flash + 1 : 0;
+
+    // Обновить экран при каждом мигании
+    if ((cur_flash == 0 || cur_flash == 12) && videomode == 0) switch_vm(0);
 }
 
 // Ожидание событий
@@ -149,56 +225,6 @@ void AVR::update() {
     SDL_RenderClear         (sdl_renderer);
     SDL_RenderCopy          (sdl_renderer, sdl_screen_texture, NULL, &dstRect);
     SDL_RenderPresent       (sdl_renderer);
-}
-
-// Один фрейм
-void AVR::frame() {
-
-    uint32_t instr = 0;
-
-    Uint32 TM = SDL_GetTicks();
-    while (instr < target) {
-
-        // Отладка
-        if (debug) {
-
-            printf("%04X: %04X\n", 2*pc, program[pc]);
-            target = 100;
-        }
-
-        // Извлечь следующую клавишу
-        if (flag.i && kb_id > 0) {
-
-            kb_code = kb[0];
-            for (int i = 0; i < kb_id - 1; i++) kb[i] = kb[i+1];
-            kb_id = (kb_id - 1) & 255;
-
-            interruptcall(2);
-        }
-
-        instr += step();
-    }
-
-    // TIMER IRQ
-    if (flag.i) interruptcall(1);
-
-    TM = SDL_GetTicks() - TM;
-
-    // Корректировать максимальную скорость
-    if (debug == 0 && TM < frame_length) {
-        target = (target * frame_length) / (TM ? TM : 1);
-    }
-
-    // Не более 25 Мгц
-    if (target > 1000000) {
-        target = 1000000;
-    }
-
-    // Мигание курсора
-    cur_flash = (cur_flash < 25) ? cur_flash + 1 : 0;
-
-    // Обновить экран при каждом мигании
-    if ((cur_flash == 0 || cur_flash == 12) && videomode == 0) switch_vm(0);
 }
 
 // -----------------------------------------------------------------------------

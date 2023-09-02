@@ -110,6 +110,10 @@ public:
     uint8_t     spi_sector[512];
     FILE*       spi_file;
 
+    // Дизассемблер
+    FILE*       dbg_file = NULL;
+    char        ds_line[128];
+
     // Процессор
     int         pc, cpu_halt, require_halt;
     uint16_t    opcode, command, cycles;
@@ -131,6 +135,8 @@ public:
     void        load(int, char**);
     void        kbd_scancode(int scancode, int release);
     void        kbd_push(uint8_t code);
+    int         ds_fetch(uint16_t & addr);
+    int         ds_decode(uint16_t addr);
 
     // IO
     void        switch_vm(uint8_t);
@@ -144,6 +150,7 @@ public:
     void        interruptcall(int);
     void        frame();
     void        spi_cmd(uint8_t data);
+    uint8_t     get_pbyte(int x);
 
     // Установка флагов
     uint32_t    neg(unsigned int);

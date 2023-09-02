@@ -35,6 +35,15 @@ unsigned int AVR::neg(unsigned int n) {
     return n ^ 0xffff;
 }
 
+// Получение одного байта из памяти PRG-ROM
+uint8_t AVR::get_pbyte(int x) {
+
+    int y = x >> 1;
+    if (x & 1)
+         return program[y] >> 8;
+    else return program[y];
+}
+
 // Установка флагов
 void AVR::set_logic_flags(uint8_t r) {
 
@@ -573,14 +582,14 @@ int AVR::step() {
         // r0 = [Z]
         case LPM0Z:
 
-            sram[0] = program[get_Z()];
+            sram[0] = get_pbyte(get_Z());
             cycles = 2;
             break;
 
         // rn = [Z]
         case LPMRZ:
 
-            put_rd(program[get_Z()]);
+            put_rd(get_pbyte(get_Z()));
             cycles = 2;
             break;
 
@@ -588,7 +597,7 @@ int AVR::step() {
         case LPMRZ_:
 
             p = get_Z();
-            put_rd(program[p]);
+            put_rd(get_pbyte(p));
             put_Z(p + 1);
             cycles = 2;
             break;
@@ -626,20 +635,20 @@ int AVR::step() {
         // Загрузка из доп. памяти
         case ELPM0Z:
 
-            sram[0] = program[ get_Z() + (sram[0x5B] << 16) ];
+            sram[0] = get_pbyte( get_Z() + (sram[0x5B] << 16) );
             cycles = 2;
             break;
 
         case ELPMRZ:
 
-            put_rd(program[ get_Z() + (sram[0x5B] << 16) ]);
+            put_rd(get_pbyte( get_Z() + (sram[0x5B] << 16) ));
             cycles = 2;
             break;
 
         case ELPMRZ_:
 
             p = get_Z() + (sram[0x5B] << 16);
-            put_rd(program[p]);
+            put_rd(get_pbyte(p));
             put_Z(p + 1);
             cycles = 2;
             break;

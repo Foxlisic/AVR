@@ -1,4 +1,4 @@
-FILES=avemu.o av.o cpu.o io.o assign.o sd.o
+FILES=avemu.o av.o cpu.o io.o assign.o sd.o disasm.o
 CONF=-lSDL2 -Wall
 
 all: win
