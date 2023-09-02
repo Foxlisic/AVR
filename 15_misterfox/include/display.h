@@ -21,11 +21,15 @@ public:
         outp(VMODE, cmode);
     }
 
+    void color(byte ch) { attr = ch; }
+
     // Очистка экрана от скверны
     void cls(byte _attr = 0x07) {
 
         heapvm;
+
         attr = _attr;
+        locate(0, 0);
 
         switch (cmode) {
 
@@ -38,6 +42,16 @@ public:
 
                 break;
         }
+    }
+
+    // Установка курсора
+    void locate(byte x, byte y) {
+
+        locx = x;
+        locy = y;
+
+        outp(CURX, x);
+        outp(CURY, y);
     }
 
     // Пропечать одного символа
@@ -59,6 +73,8 @@ public:
                     locy = 24;
                 }
             }
+
+            locate(locx, locy);
         }
     }
 
