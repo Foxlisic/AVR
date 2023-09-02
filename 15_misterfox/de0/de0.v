@@ -98,28 +98,48 @@ pll PLL0
     .locked    (locked)
 );
 
-
 // -----------------------------------------------------------------------------
 // ПАМЯТЬ
 // -----------------------------------------------------------------------------
 
+wire [15:0] pc, ir;
+wire [15:0] address;
+wire [ 7:0] data_o, data_i;
+wire        we;
+
+// Память программ 128K
+mem_prg M0
+(
+    .clock  (clock_100),
+    .a0     (pc),
+    .q0     (ir)
+);
+
+// Общая видеопамять 128K
+mem_ram M1
+(
+    .clock  (clock_100),
+    .a1     (char_address),
+    .q1     (char_data)
+);
+
 // Шрифты 2K
-mem_font M1
+mem_font M2
 (
     .clock  (clock_100),
     .a0     (font_address),
-    .q0     (font_data),
+    .q0     (font_data)
 );
 
 // -----------------------------------------------------------------------------
 // ВИДЕОАДАПТЕР
 // -----------------------------------------------------------------------------
 
-wire [17:0] char_address;           // 256K
+wire [16:0] char_address;           // 128K
 wire [11:0] font_address;
-wire [ 7:0] char_data = 8'h17;
+wire [ 7:0] char_data;
 wire [ 7:0] font_data;
-wire [10:0] cursor = 1;
+wire [10:0] cursor;
 
 video U1
 (

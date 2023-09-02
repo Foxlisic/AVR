@@ -13,7 +13,7 @@ module video
     output  wire        vs,      // вертикальная развертка
 
     // Доступ к памяти
-    output  reg  [17:0] char_address,
+    output  reg  [16:0] char_address,
     output  reg  [11:0] font_address,
     input   wire [ 7:0] char_data,
     input   wire [ 7:0] font_data,
