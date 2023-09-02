@@ -28,3 +28,5 @@ obj_dir
 *.elf
 *.qdf
 *.lst
+mem_prg.mif
+mem_ram.mif
