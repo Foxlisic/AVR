@@ -104,11 +104,22 @@ pll PLL0
 
 wire [15:0] pc, ir;
 wire [15:0] address;
-wire [ 7:0] data_o, data_i;
+wire [ 7:0] data_o, data_m1;
 wire        we, read;
 
 // Учесть банки памяти
-wire [16:0] cpu_address = address;
+wire [16:0] cpu_address = address + (address >= 16'hF000 ?  bank*4096 : 0);
+
+// Роутер памяти и портов
+wire [ 7:0] data_i =
+    address == 16'h20 ? bank        :
+    address == 16'h21 ? vmode       :
+    address == 16'h22 ? kb_data_in  :
+    address == 16'h2E ? curx        :
+    address == 16'h2F ? cury        :
+                        data_m1;
+
+// -----------------------------------------------------------------------------
 
 // Память программ 128K
 mem_prg M0
@@ -123,7 +134,7 @@ mem_ram M1
 (
     .clock  (clock_100),
     .a0     (cpu_address),
-    .q0     (data_i),
+    .q0     (data_m1),
     .d0     (data_o),
     .w0     (we),
     .a1     (char_address),
@@ -139,6 +150,54 @@ mem_font M2
 );
 
 // -----------------------------------------------------------------------------
+// КОНТРОЛЛЕР ПОРТОВ
+// -----------------------------------------------------------------------------
+
+reg [7:0]   bank;
+reg [1:0]   vmode;
+reg [7:0]   spi_cmd;
+reg [1:0]   spi_ctl;    // 0-PUT, 1-INIT, 2-CE0, 3-CE1
+reg         spi;        // Если 1, то команда отправлена
+reg         irq_ack;
+reg [2:0]   irq_queue;
+
+always @(posedge clock_25)
+begin
+
+    spi <= 0;
+
+    if (we)
+    case (address)
+
+        16'h20: begin bank      <= data_o; end
+        16'h21: begin vmode     <= data_o[1:0]; end
+        16'h22: begin irq_ack   <= 0; end
+        16'h2C: begin spi       <= 1; spi_ctl <= 0; spi_cmd <= data_o; end
+        16'h2D: begin spi       <= 1; spi_ctl <= data_o; end
+        16'h2E: begin cursor    <= data_o + 80*cury  ; curx <= data_o; end
+        16'h2F: begin cursor    <= curx   + 80*data_o; cury <= data_o; end
+
+    endcase
+
+    // Пришли новые данные от клавиатуры
+    if (kb_done) begin kb_data_in <= kb_data; irq_queue[2] <= 1'b1; end
+
+    // Предыдущее прерывание либо не было, либо уже отработало
+    if (!irq_ack) begin
+
+        // При наличии прерываний в очереди, включается IRQ_ACK=1, чтобы заблокировать
+        // следующие прерывания из очереди
+        if (irq_queue) begin intr <= ~intr; irq_ack <= 1; end
+
+        // Активация прерывания по приоритету
+        if      (irq_queue[1]) begin vect <= 1; irq_queue[1] <= 1'b0; end // TIMER
+        else if (irq_queue[2]) begin vect <= 2; irq_queue[2] <= 1'b0; end // KEYBOARD
+
+    end
+
+end
+
+// -----------------------------------------------------------------------------
 // ВИДЕОАДАПТЕР
 // -----------------------------------------------------------------------------
 
@@ -146,7 +205,8 @@ wire [16:0] char_address;           // 128K
 wire [11:0] font_address;
 wire [ 7:0] char_data;
 wire [ 7:0] font_data;
-wire [10:0] cursor;
+reg  [10:0] cursor;
+reg  [ 7:0] curx, cury;
 
 video U1
 (
@@ -169,11 +229,28 @@ video U1
 );
 
 // -----------------------------------------------------------------------------
+// КЛАВИАТУРА
+// -----------------------------------------------------------------------------
+
+wire        kb_done;
+wire [7:0]  kb_data;
+reg  [7:0]  kb_data_in;
+
+ps2 PS2KEYB
+(
+    .clock      (clock_25),
+    .ps_clock   (PS2_CLK),
+    .ps_data    (PS2_DAT),
+    .done       (kb_done),
+    .data       (kb_data)
+);
+
+// -----------------------------------------------------------------------------
 // ЦЕНТРАЛЬНЫЙ ПРОЦЕССОР
 // -----------------------------------------------------------------------------
 
-wire        intr = 1'b0;
-wire [ 2:0] vect = 3'h0;
+reg         intr = 1'b0;
+reg [ 2:0]  vect = 3'h0;
 
 core COREAVR
 (

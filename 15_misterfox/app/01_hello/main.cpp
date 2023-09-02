@@ -11,5 +11,5 @@ int main() {
 
     D.color(0x17);
     D.locate(34, 12);
-    D.print("HELLO WORLD");
+    D.print("HELLO WORLD!");
 }

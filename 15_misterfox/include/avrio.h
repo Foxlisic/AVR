@@ -48,5 +48,6 @@ inline void outp(int port, unsigned char val) {
 #define heapvm      byte* vm = (byte*) 0xF000
 #define bank(x)     outp(BANK, x)
 #define vmode(x)    outp(VMODE, x)
+#define eoi         outp(KEYB, 255)
 
 #endif
