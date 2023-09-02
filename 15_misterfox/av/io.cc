@@ -37,6 +37,7 @@ void AVR::put(uint16_t addr, uint8_t value) {
 
         case 0x20: bank = value; break;         // Указатель на банк памяти
         case 0x21: switch_vm(value); break;     // Видеорежим
+        case 0x22: eoi = 0; break;              // Разрешение прерывания
         case 0x2C: spi_cmd(value); break;       // SD-карта
         case 0x2D: spi_st &= ~2; break;         // Сброс таймаута
         case 0x2E: cur_x = value; break;        // Курсор X

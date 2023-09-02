@@ -62,7 +62,6 @@ void AVR::load(int argc, char** argv) {
         if (argv[i][0] == '-') {
 
             switch (argv[i][1]) {
-
                 case 'd': debug = 1; target = 1000; break;
             }
         }
@@ -110,20 +109,20 @@ void AVR::frame() {
         }
 
         // Извлечь следующую клавишу
-        if (flag.i && kb_id > 0) {
+        if (flag.i && kb_id > 0 && eoi == 0) {
 
             kb_code = kb[0];
             for (int i = 0; i < kb_id - 1; i++) kb[i] = kb[i+1];
             kb_id = (kb_id - 1) & 255;
 
-            if (intr_mask & 2) interruptcall(2);
+            if (intr_mask & 2) { eoi = 1; interruptcall(2); }
         }
 
         instr += step();
     }
 
     // TIMER IRQ
-    if (flag.i && (intr_mask & 1)) interruptcall(1);
+    if (flag.i && (intr_mask & 1) && eoi == 0) { eoi = 1; interruptcall(1); }
 
     TM = SDL_GetTicks() - TM;
 

@@ -183,10 +183,10 @@ begin
     endcase
 
     // Прерывание от видеоадаптера, каждые 1/60 секунд
-    if (ga_int)  begin irq_queue[1] <= intmask[1]; end
+    if (ga_int)  begin irq_queue[1] <= intmask[0]; end
 
     // Пришли новые данные от клавиатуры
-    if (kb_done) begin irq_queue[2] <= intmask[2]; kb_data_in <= kb_data; end
+    if (kb_done) begin irq_queue[2] <= intmask[1]; kb_data_in <= kb_data; end
 
     // Предыдущее прерывание либо не было, либо уже отработало
     if (!irq_ack) begin
