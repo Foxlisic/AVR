@@ -59,8 +59,8 @@ int AVR::ds_decode(uint16_t addr) {
     // Смещение
     char name_Yq[32];   if (Qi) sprintf(name_Yq, "Y+%d", Qi); else sprintf(name_Yq, "Y");
     char name_Zq[32];   if (Qi) sprintf(name_Zq, "Z+%d", Qi); else sprintf(name_Zq, "Z");
-    char name_LDD[32];  if (Qi) sprintf(name_LDD, "ldd"); else sprintf(name_LDD, "ld");
-    char name_STD[32];  if (Qi) sprintf(name_STD, "std"); else sprintf(name_STD, "st");
+    char name_LDD[32];  if (Qi) sprintf(name_LDD, "LDD"); else sprintf(name_LDD, "LD");
+    char name_STD[32];  if (Qi) sprintf(name_STD, "STD"); else sprintf(name_STD, "ST");
 
     // Условие
     char name_brc[16];  sprintf(name_brc, "%s", ds_brcs[0][Bit7]);
@@ -81,21 +81,21 @@ int AVR::ds_decode(uint16_t addr) {
     // Immediate
     switch (opcode & 0xF000) {
 
-        case 0xC000: strcpy(mnem, "rjmp");  strcpy(op1, name_rjmp); break; // k
-        case 0xD000: strcpy(mnem, "rcall"); strcpy(op1, name_rjmp); break; // k
-        case 0xE000: strcpy(mnem, "ldi");   strcpy(op1, name_Rdi); strcpy(op2, name_K); break; // Rd, K
-        case 0x3000: strcpy(mnem, "cpi");   strcpy(op1, name_Rdi); strcpy(op2, name_K); break; // Rd, K
-        case 0x4000: strcpy(mnem, "sbci");  strcpy(op1, name_Rdi); strcpy(op2, name_K); break; // Rd, K
-        case 0x5000: strcpy(mnem, "subi");  strcpy(op1, name_Rdi); strcpy(op2, name_K); break; // Rd, K
-        case 0x6000: strcpy(mnem, "ori");   strcpy(op1, name_Rdi); strcpy(op2, name_K); break; // Rd, K
-        case 0x7000: strcpy(mnem, "andi");  strcpy(op1, name_Rdi); strcpy(op2, name_K); break; // Rd, K
+        case 0xC000: strcpy(mnem, "RJMP");  strcpy(op1, name_rjmp); break; // k
+        case 0xD000: strcpy(mnem, "RCALL"); strcpy(op1, name_rjmp); break; // k
+        case 0xE000: strcpy(mnem, "LDI");   strcpy(op1, name_Rdi); strcpy(op2, name_K); break; // Rd, K
+        case 0x3000: strcpy(mnem, "CPI");   strcpy(op1, name_Rdi); strcpy(op2, name_K); break; // Rd, K
+        case 0x4000: strcpy(mnem, "SBCI");  strcpy(op1, name_Rdi); strcpy(op2, name_K); break; // Rd, K
+        case 0x5000: strcpy(mnem, "SUBI");  strcpy(op1, name_Rdi); strcpy(op2, name_K); break; // Rd, K
+        case 0x6000: strcpy(mnem, "ORI");   strcpy(op1, name_Rdi); strcpy(op2, name_K); break; // Rd, K
+        case 0x7000: strcpy(mnem, "ANDI");  strcpy(op1, name_Rdi); strcpy(op2, name_K); break; // Rd, K
     }
 
     // lds/sts 16 bit, in/out
     switch (opcode & 0xF800) {
 
-        case 0xB000: strcpy(mnem, "in");  strcpy(op1, name_Rd);  strcpy(op2, name_Ap);  break; // Rd, A
-        case 0xB800: strcpy(mnem, "out"); strcpy(op1, name_Ap);  strcpy(op2, name_Rd);  break; // A, Rr
+        case 0xB000: strcpy(mnem, "IN");  strcpy(op1, name_Rd);  strcpy(op2, name_Ap);  break; // Rd, A
+        case 0xB800: strcpy(mnem, "OUT"); strcpy(op1, name_Ap);  strcpy(op2, name_Rd);  break; // A, Rr
     }
 
     // bset/clr
@@ -108,84 +108,84 @@ int AVR::ds_decode(uint16_t addr) {
     // alu op1, op2
     switch (opcode & 0xFC00) {
 
-        case 0x0400: strcpy(mnem, "cpc");  strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
-        case 0x0800: strcpy(mnem, "sbc");  strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
-        case 0x0C00: strcpy(mnem, "add");  strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
+        case 0x0400: strcpy(mnem, "CPC");  strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
+        case 0x0800: strcpy(mnem, "SBC");  strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
+        case 0x0C00: strcpy(mnem, "ADD");  strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
         case 0x1C00: // Rd, Rr
 
-            strcpy(mnem, Rd == Rr ? "rol" : "adc");
+            strcpy(mnem, Rd == Rr ? "ROL" : "ADC");
             strcpy(op1, name_Rd);
             if (Rr != Rd) { strcpy(op2, name_Rr); }
             break;
 
-        case 0x2C00: strcpy(mnem, "mov");  strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
-        case 0x9C00: strcpy(mnem, "mul");  strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
-        case 0x1000: strcpy(mnem, "cpse"); strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
-        case 0x1400: strcpy(mnem, "cp");   strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
-        case 0x1800: strcpy(mnem, "sub");  strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
-        case 0x2000: strcpy(mnem, "and");  strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
-        case 0x2400: strcpy(mnem, "eor");  strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
-        case 0x2800: strcpy(mnem, "or");   strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
-        case 0xF000: sprintf(mnem, "br%s", name_brs); strcpy(op1, name_bjmp); break; // s, k
-        case 0xF400: sprintf(mnem, "br%s", name_brc); strcpy(op1, name_bjmp); break; // s, k
+        case 0x2C00: strcpy(mnem, "MOV");  strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
+        case 0x9C00: strcpy(mnem, "MUL");  strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
+        case 0x1000: strcpy(mnem, "CPSE"); strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
+        case 0x1400: strcpy(mnem, "CP");   strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
+        case 0x1800: strcpy(mnem, "SUB");  strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
+        case 0x2000: strcpy(mnem, "AND");  strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
+        case 0x2400: strcpy(mnem, "EOR");  strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
+        case 0x2800: strcpy(mnem, "OR");   strcpy(op1, name_Rd); strcpy(op2, name_Rr); break; // Rd, Rr
+        case 0xF000: sprintf(mnem, "BR%s", name_brs); strcpy(op1, name_bjmp); break; // s, k
+        case 0xF400: sprintf(mnem, "BR%s", name_brc); strcpy(op1, name_bjmp); break; // s, k
     }
 
     // Bit operation
     switch (opcode & 0xFE08) {
 
-        case 0xF800: strcpy(mnem, "bld");   strcpy(op1, name_Rd); strcpy(op2, name_bit7); break; // Rd, b
-        case 0xFA00: strcpy(mnem, "bst");   strcpy(op1, name_Rd); strcpy(op2, name_bit7); break; // Rd, b
-        case 0xFC00: strcpy(mnem, "sbrc");  strcpy(op1, name_Rd); strcpy(op2, name_bit7); break; // Rr, b
-        case 0xFE00: strcpy(mnem, "sbrs");  strcpy(op1, name_Rd); strcpy(op2, name_bit7); break; // Rr, b
+        case 0xF800: strcpy(mnem, "BLD");   strcpy(op1, name_Rd); strcpy(op2, name_bit7); break; // Rd, b
+        case 0xFA00: strcpy(mnem, "BST");   strcpy(op1, name_Rd); strcpy(op2, name_bit7); break; // Rd, b
+        case 0xFC00: strcpy(mnem, "SBRC");  strcpy(op1, name_Rd); strcpy(op2, name_bit7); break; // Rr, b
+        case 0xFE00: strcpy(mnem, "SBRS");  strcpy(op1, name_Rd); strcpy(op2, name_bit7); break; // Rr, b
     }
 
     // jmp/call 24 bit
     switch (opcode & 0xFE0E) {
 
-        case 0x940C: strcpy(mnem, "jmp");  append = ds_fetch(addr); sprintf(op1, "%05X", 2*(jmpfar + append)); break; // k2
-        case 0x940E: strcpy(mnem, "call"); append = ds_fetch(addr); sprintf(op1, "%05X", 2*(jmpfar + append)); break; // k2
+        case 0x940C: strcpy(mnem, "JMP");  append = ds_fetch(addr); sprintf(op1, "%05X", 2*(jmpfar + append)); break; // k2
+        case 0x940E: strcpy(mnem, "CALL"); append = ds_fetch(addr); sprintf(op1, "%05X", 2*(jmpfar + append)); break; // k2
     }
 
     // ST/LD
     switch (opcode & 0xFE0F) {
 
-        case 0x900F: strcpy(mnem, "pop");   strcpy(op1, name_Rd); break; // Rd
-        case 0x920F: strcpy(mnem, "push");  strcpy(op1, name_Rd); break; // Rd
-        case 0x940A: strcpy(mnem, "dec");   strcpy(op1, name_Rd); break; // Rd
-        case 0x9204: strcpy(mnem, "xch");   strcpy(op1, name_Rd); break; // Rr
-        case 0x9205: strcpy(mnem, "las");   strcpy(op1, name_Rd); break; // Rr
-        case 0x9206: strcpy(mnem, "lac");   strcpy(op1, name_Rd); break; // Rr
-        case 0x9207: strcpy(mnem, "lat");   strcpy(op1, name_Rd); break; // Rr
-        case 0x9400: strcpy(mnem, "com");   strcpy(op1, name_Rd); break; // Rd
-        case 0x9401: strcpy(mnem, "neg");   strcpy(op1, name_Rd); break; // Rd
-        case 0x9402: strcpy(mnem, "swap");  strcpy(op1, name_Rd); break; // Rd
-        case 0x9403: strcpy(mnem, "inc");   strcpy(op1, name_Rd); break; // Rd
-        case 0x9405: strcpy(mnem, "asr");   strcpy(op1, name_Rd); break; // Rd
-        case 0x9406: strcpy(mnem, "lsr");   strcpy(op1, name_Rd); break; // Rd
-        case 0x9407: strcpy(mnem, "ror");   strcpy(op1, name_Rd); break; // Rd
-        case 0x900A: strcpy(mnem, "ld");    strcpy(op1, name_Rd); strcpy(op2, "-Y"); break; // Rd, -Y
-        case 0x900C: strcpy(mnem, "ld");    strcpy(op1, name_Rd); strcpy(op2, "X");  break; // Rd, X
-        case 0x900D: strcpy(mnem, "ld");    strcpy(op1, name_Rd); strcpy(op2, "X+"); break; // Rd, X+
-        case 0x900E: strcpy(mnem, "ld");    strcpy(op1, name_Rd); strcpy(op2, "-X"); break; // Rd, -X
-        case 0x9001: strcpy(mnem, "ld");    strcpy(op1, name_Rd); strcpy(op2, "Z+"); break; // Rd, Z+
-        case 0x9002: strcpy(mnem, "ld");    strcpy(op1, name_Rd); strcpy(op2, "-Z"); break; // Rd, -Z
-        case 0x9004: strcpy(mnem, "lpm");   strcpy(op1, name_Rd); strcpy(op2, "Z");  break; // Rd, Z
-        case 0x9005: strcpy(mnem, "lpm");   strcpy(op1, name_Rd); strcpy(op2, "Z+"); break; // Rd, Z+
-        case 0x9006: strcpy(mnem, "elpm");  strcpy(op1, name_Rd); strcpy(op2, "Z");  break; // Rd, Z
-        case 0x9007: strcpy(mnem, "elpm");  strcpy(op1, name_Rd); strcpy(op2, "Z+"); break; // Rd, Z+
-        case 0x9009: strcpy(mnem, "ld");    strcpy(op1, name_Rd); strcpy(op2, "Y+"); break; // Rd, Y+
-        case 0x920C: strcpy(mnem, "st");    strcpy(op1, "X");  strcpy(op2, name_Rd); break; // X, Rd
-        case 0x920D: strcpy(mnem, "st");    strcpy(op1, "X+"); strcpy(op2, name_Rd); break; // X+, Rd
-        case 0x920E: strcpy(mnem, "st");    strcpy(op1, "-X"); strcpy(op2, name_Rd); break; // -X, Rd
-        case 0x9209: strcpy(mnem, "std");   strcpy(op1, "Y+"); strcpy(op2, name_Rd); break; // Y+, Rd
-        case 0x920A: strcpy(mnem, "std");   strcpy(op1, "-Y"); strcpy(op2, name_Rd); break; // -Y, Rd
-        case 0x9201: strcpy(mnem, "std");   strcpy(op1, "Z+"); strcpy(op2, name_Rd); break; // Z+, Rd
-        case 0x9202: strcpy(mnem, "std");   strcpy(op1, "-Z"); strcpy(op2, name_Rd); break; // -Z, Rd
+        case 0x900F: strcpy(mnem, "POP");   strcpy(op1, name_Rd); break; // Rd
+        case 0x920F: strcpy(mnem, "PUSH");  strcpy(op1, name_Rd); break; // Rd
+        case 0x940A: strcpy(mnem, "DEC");   strcpy(op1, name_Rd); break; // Rd
+        case 0x9204: strcpy(mnem, "XCH");   strcpy(op1, name_Rd); break; // Rr
+        case 0x9205: strcpy(mnem, "LAS");   strcpy(op1, name_Rd); break; // Rr
+        case 0x9206: strcpy(mnem, "LAC");   strcpy(op1, name_Rd); break; // Rr
+        case 0x9207: strcpy(mnem, "LAT");   strcpy(op1, name_Rd); break; // Rr
+        case 0x9400: strcpy(mnem, "COM");   strcpy(op1, name_Rd); break; // Rd
+        case 0x9401: strcpy(mnem, "NEG");   strcpy(op1, name_Rd); break; // Rd
+        case 0x9402: strcpy(mnem, "SWAP");  strcpy(op1, name_Rd); break; // Rd
+        case 0x9403: strcpy(mnem, "INC");   strcpy(op1, name_Rd); break; // Rd
+        case 0x9405: strcpy(mnem, "ASR");   strcpy(op1, name_Rd); break; // Rd
+        case 0x9406: strcpy(mnem, "LSR");   strcpy(op1, name_Rd); break; // Rd
+        case 0x9407: strcpy(mnem, "ROR");   strcpy(op1, name_Rd); break; // Rd
+        case 0x900A: strcpy(mnem, "LD");    strcpy(op1, name_Rd); strcpy(op2, "-Y"); break; // Rd, -Y
+        case 0x900C: strcpy(mnem, "LD");    strcpy(op1, name_Rd); strcpy(op2, "X");  break; // Rd, X
+        case 0x900D: strcpy(mnem, "LD");    strcpy(op1, name_Rd); strcpy(op2, "X+"); break; // Rd, X+
+        case 0x900E: strcpy(mnem, "LD");    strcpy(op1, name_Rd); strcpy(op2, "-X"); break; // Rd, -X
+        case 0x9001: strcpy(mnem, "LD");    strcpy(op1, name_Rd); strcpy(op2, "Z+"); break; // Rd, Z+
+        case 0x9002: strcpy(mnem, "LD");    strcpy(op1, name_Rd); strcpy(op2, "-Z"); break; // Rd, -Z
+        case 0x9004: strcpy(mnem, "LPM");   strcpy(op1, name_Rd); strcpy(op2, "Z");  break; // Rd, Z
+        case 0x9005: strcpy(mnem, "LPM");   strcpy(op1, name_Rd); strcpy(op2, "Z+"); break; // Rd, Z+
+        case 0x9006: strcpy(mnem, "ELPM");  strcpy(op1, name_Rd); strcpy(op2, "Z");  break; // Rd, Z
+        case 0x9007: strcpy(mnem, "ELPM");  strcpy(op1, name_Rd); strcpy(op2, "Z+"); break; // Rd, Z+
+        case 0x9009: strcpy(mnem, "LD");    strcpy(op1, name_Rd); strcpy(op2, "Y+"); break; // Rd, Y+
+        case 0x920C: strcpy(mnem, "ST");    strcpy(op1, "X");  strcpy(op2, name_Rd); break; // X, Rd
+        case 0x920D: strcpy(mnem, "ST");    strcpy(op1, "X+"); strcpy(op2, name_Rd); break; // X+, Rd
+        case 0x920E: strcpy(mnem, "ST");    strcpy(op1, "-X"); strcpy(op2, name_Rd); break; // -X, Rd
+        case 0x9209: strcpy(mnem, "STD");   strcpy(op1, "Y+"); strcpy(op2, name_Rd); break; // Y+, Rd
+        case 0x920A: strcpy(mnem, "STD");   strcpy(op1, "-Y"); strcpy(op2, name_Rd); break; // -Y, Rd
+        case 0x9201: strcpy(mnem, "STD");   strcpy(op1, "Z+"); strcpy(op2, name_Rd); break; // Z+, Rd
+        case 0x9202: strcpy(mnem, "STD");   strcpy(op1, "-Z"); strcpy(op2, name_Rd); break; // -Z, Rd
 
         case 0x9000:
         case 0x9200:
 
-            strcpy(mnem, opcode & 0x0200 ? "sts" : "lds");
+            strcpy(mnem, opcode & 0x0200 ? "STS" : "LDS");
             strcpy(op1, name_Rd);
             sprintf(op2, "$%04X", ds_fetch(addr));
             break;
@@ -194,48 +194,48 @@ int AVR::ds_decode(uint16_t addr) {
     // Word Ops
     switch (opcode & 0xFF00) {
 
-        case 0x0100: strcpy(mnem, "movw"); strcpy(op1, name_Rd4);  strcpy(op2, name_Rr4);  break; // Rd+1:Rd, Rr+1:Rr
-        case 0x0200: strcpy(mnem, "muls"); strcpy(op1, name_Rd);   strcpy(op2, name_Rr);   break; // Rd, Rr
-        case 0x9A00: strcpy(mnem, "sbi");  strcpy(op1, name_Ap8);  strcpy(op2, name_bit7); break; // A, b
-        case 0x9B00: strcpy(mnem, "sbis"); strcpy(op1, name_Ap8);  strcpy(op2, name_bit7); break; // A, b
-        case 0x9600: strcpy(mnem, "adiw"); strcpy(op1, name_adiw); strcpy(op2, name_Ka);   break; // Rd+1:Rd, K
-        case 0x9700: strcpy(mnem, "sbiw"); strcpy(op1, name_adiw); strcpy(op2, name_Ka);   break; // Rd+1:Rd, K
-        case 0x9800: strcpy(mnem, "cbi");  strcpy(op1, name_Ap8);  strcpy(op2, name_bit7); break; // A, b
-        case 0x9900: strcpy(mnem, "sbic"); strcpy(op1, name_Ap8);  strcpy(op2, name_bit7); break; // A, b
+        case 0x0100: strcpy(mnem, "MOVW"); strcpy(op1, name_Rd4);  strcpy(op2, name_Rr4);  break; // Rd+1:Rd, Rr+1:Rr
+        case 0x0200: strcpy(mnem, "MULS"); strcpy(op1, name_Rd);   strcpy(op2, name_Rr);   break; // Rd, Rr
+        case 0x9A00: strcpy(mnem, "SBI");  strcpy(op1, name_Ap8);  strcpy(op2, name_bit7); break; // A, b
+        case 0x9B00: strcpy(mnem, "SBIS"); strcpy(op1, name_Ap8);  strcpy(op2, name_bit7); break; // A, b
+        case 0x9600: strcpy(mnem, "ADIW"); strcpy(op1, name_adiw); strcpy(op2, name_Ka);   break; // Rd+1:Rd, K
+        case 0x9700: strcpy(mnem, "SBIW"); strcpy(op1, name_adiw); strcpy(op2, name_Ka);   break; // Rd+1:Rd, K
+        case 0x9800: strcpy(mnem, "CBI");  strcpy(op1, name_Ap8);  strcpy(op2, name_bit7); break; // A, b
+        case 0x9900: strcpy(mnem, "SBIC"); strcpy(op1, name_Ap8);  strcpy(op2, name_bit7); break; // A, b
     }
 
     // DES
     switch (opcode & 0xFF0F) {
 
-        case 0x940B: strcpy(mnem, "des");  sprintf(op1, "$%02X", (opcode & 0xF0) >> 4); break; // K
+        case 0x940B: strcpy(mnem, "DES");  sprintf(op1, "$%02X", (opcode & 0xF0) >> 4); break; // K
     }
 
     // Multiply
     switch (opcode & 0xFF88) {
 
-        case 0x0300: strcpy(mnem, "mulsu");  strcpy(op1, name_Rd); strcpy(op1, name_Rr); break; // Rd, Rr
-        case 0x0308: strcpy(mnem, "fmul");   strcpy(op1, name_Rd); strcpy(op1, name_Rr); break; // Rd, Rr
-        case 0x0380: strcpy(mnem, "fmuls");  strcpy(op1, name_Rd); strcpy(op1, name_Rr); break; // Rd, Rr
-        case 0x0388: strcpy(mnem, "fmulsu"); strcpy(op1, name_Rd); strcpy(op1, name_Rr); break; // Rd, Rr
+        case 0x0300: strcpy(mnem, "MULSU");  strcpy(op1, name_Rd); strcpy(op1, name_Rr); break; // Rd, Rr
+        case 0x0308: strcpy(mnem, "FMUL");   strcpy(op1, name_Rd); strcpy(op1, name_Rr); break; // Rd, Rr
+        case 0x0380: strcpy(mnem, "FMULS");  strcpy(op1, name_Rd); strcpy(op1, name_Rr); break; // Rd, Rr
+        case 0x0388: strcpy(mnem, "FMULSU"); strcpy(op1, name_Rd); strcpy(op1, name_Rr); break; // Rd, Rr
     }
 
     // Одиночные
     switch (opcode & 0xFFFF) {
 
-        case 0x0000: strcpy(mnem, "nop");   break;
-        case 0x95A8: strcpy(mnem, "wdr");   break;
-        case 0x95C8: strcpy(mnem, "lpm");   strcpy(op1, "r0"); strcpy(op2, "Z"); break; // R0, Z
-        case 0x95D8: strcpy(mnem, "elpm");  strcpy(op1, "r0"); strcpy(op2, "Z"); break; // R0, Z
-        case 0x9409: strcpy(mnem, "ijmp");  break;
-        case 0x9419: strcpy(mnem, "eijmp"); break;
-        case 0x9508: strcpy(mnem, "ret");   break;
-        case 0x9509: strcpy(mnem, "icall"); break;
-        case 0x9518: strcpy(mnem, "reti");  break;
-        case 0x9519: strcpy(mnem, "eicall"); break;
-        case 0x95E8: strcpy(mnem, "spm");   break;
-        case 0x95F8: strcpy(mnem, "spm.2"); break;
-        case 0x9588: strcpy(mnem, "sleep"); break;
-        case 0x9598: strcpy(mnem, "break"); break;
+        case 0x0000: strcpy(mnem, "NOP");   break;
+        case 0x95A8: strcpy(mnem, "WDR");   break;
+        case 0x95C8: strcpy(mnem, "LPM");   strcpy(op1, "r0"); strcpy(op2, "Z"); break; // R0, Z
+        case 0x95D8: strcpy(mnem, "ELPM");  strcpy(op1, "r0"); strcpy(op2, "Z"); break; // R0, Z
+        case 0x9409: strcpy(mnem, "IJMP");  break;
+        case 0x9419: strcpy(mnem, "EIJMP"); break;
+        case 0x9508: strcpy(mnem, "RET");   break;
+        case 0x9509: strcpy(mnem, "ICALL"); break;
+        case 0x9518: strcpy(mnem, "RETI");  break;
+        case 0x9519: strcpy(mnem, "EICALL"); break;
+        case 0x95E8: strcpy(mnem, "SPM");   break;
+        case 0x95F8: strcpy(mnem, "SPM.2"); break;
+        case 0x9588: strcpy(mnem, "SLEEP"); break;
+        case 0x9598: strcpy(mnem, "BREAK"); break;
     }
 
     // Дополнить пробелами

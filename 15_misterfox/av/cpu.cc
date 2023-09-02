@@ -170,6 +170,7 @@ int AVR::step() {
         case SLEEP:
 
             debug = 1;
+            target = 1000;
             break;
 
         case WDR:

@@ -106,8 +106,7 @@ void AVR::frame() {
             }
 
             ds_decode(pc);
-            fprintf(dbg_file, "%05X | X=%04X Y=%04X Z=%04X | %s\n", 2*pc, get_X(), get_Y(), get_Z(), ds_line);
-            // target = 100;
+            fprintf(dbg_file, "%05X | %s\n", 2*pc, ds_line);
         }
 
         // Извлечь следующую клавишу

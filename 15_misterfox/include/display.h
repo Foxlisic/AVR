@@ -7,6 +7,7 @@ class Display {
 protected:
 
     byte cmode, attr;
+    byte locx, locy;
 
 public:
 
@@ -25,7 +26,7 @@ public:
 
         heapvm;
         attr = _attr;
-vm[0x1] = 0x17;
+
         switch (cmode) {
 
             case 0: // 80x25 Текстовый режим
@@ -37,6 +38,34 @@ vm[0x1] = 0x17;
 
                 break;
         }
+    }
+
+    // Пропечать одного символа
+    void pchr(char m) {
+
+        heapvm;
+
+        if (cmode == 0) {
+
+            int loc = 2*locx + locy*160;
+            vm[loc]   = m;
+            vm[loc+1] = attr;
+
+            locx++;
+            if (locx >= 80) {
+                locx = 0;
+                locy++;
+                if (locy >= 25) {
+                    locy = 24;
+                }
+            }
+        }
+    }
+
+    void print(const char* m) {
+
+        int i = 0;
+        while (m[i]) pchr(m[i++]);
     }
 };
 

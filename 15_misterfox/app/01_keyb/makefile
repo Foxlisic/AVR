@@ -1,4 +1,4 @@
-DEVICE = atmega103
+DEVICE = atmega128
 CLOCK  = 25000000
 COMPILE = avr-gcc \
 	-I../../include \

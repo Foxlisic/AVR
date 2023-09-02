@@ -7,10 +7,10 @@
 #include "ansi.h"
 
 static const char* ds_brcs[4][8] = {
-    {"cc", "ne", "pl", "vc", "ge", "hc", "tc", "id"},
-    {"cs", "eq", "mi", "vs", "lt", "hs", "ts", "ie"},
-    {"sec","sez","sen","sev","ses","seh","set","sei"},
-    {"clc","clz","cln","clv","cls","clh","clt","cli"}
+    {"CC", "NE", "PL", "VC", "GE", "HC", "TC", "ID"},
+    {"CS", "EQ", "MI", "VS", "LT", "HS", "TS", "IE"},
+    {"SEC","SEZ","SEN","SEV","SES","SEH","SET","SEI"},
+    {"CLC","CLZ","CLN","CLV","CLS","CLH","CLT","CLI"}
 };
 
 struct CPUFlags {

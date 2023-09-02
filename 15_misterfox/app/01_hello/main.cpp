@@ -5,6 +5,7 @@ Display D;
 
 int main() {
 
-    D.cls(0x17);
+    D.cls(0x07);
+    D.print("Hello World");
     for(;;);
 }
