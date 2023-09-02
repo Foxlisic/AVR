@@ -1,18 +1,17 @@
 #include <avrio.h>
+#include <display.h>
 
-int n = 0;
+Display D;
 
 ISR(INT1_vect) {
 
-    heapvm;
-    vm[n]   = inp(KEYB);
-    vm[n+1] = 0x17;
-    n += 2;
+    D.prn(inp(KEYB));
     eoi;
 }
 
 int main() {
 
+    D.cls();
     ei(2);
     for(;;);
 }

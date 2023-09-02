@@ -183,7 +183,7 @@ else begin
     end
     // Вызов прерывания IRQ#x срабатывает на переключении intr
     // -----------------------------------------------------------------
-    else if (en_int && intr ^ intr_prev) begin
+    else if (en_int && tstate == 0 && intr ^ intr_prev) begin
         intr_vect    <= vect; // Вектор 0..7
         intr_prev    <= intr; // Сохранить предыдущее состояние
         intr_trigger <= 1'b1; // Вызов прерывания

@@ -55,7 +55,7 @@ public:
     }
 
     // Пропечать одного символа
-    void pchr(char m) {
+    void prn(char m) {
 
         heapvm;
 
@@ -81,7 +81,7 @@ public:
     void print(const char* m) {
 
         int i = 0;
-        while (m[i]) pchr(m[i++]);
+        while (m[i]) prn(m[i++]);
     }
 };
 
