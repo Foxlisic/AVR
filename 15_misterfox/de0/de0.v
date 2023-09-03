@@ -224,6 +224,10 @@ video U1
     // Опорная частота 25 мгц
     .clock  (clock_25),
 
+    // Настройки
+    .vmode  (vmode),
+    .cursor (cursor),
+
     // Выходные данные
     .r      (VGA_R),
     .g      (VGA_G),
@@ -236,8 +240,7 @@ video U1
     .char_address   (char_address),
     .font_address   (font_address),
     .char_data      (char_data),
-    .font_data      (font_data),
-    .cursor         (cursor)
+    .font_data      (font_data)
 );
 
 // -----------------------------------------------------------------------------

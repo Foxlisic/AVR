@@ -6,12 +6,12 @@ module video
     input   wire        clock,
 
     // Выходные данные
-    output  reg  [3:0]  r,      // 4 бит на красный
-    output  reg  [3:0]  g,      // 4 бит на зеленый
-    output  reg  [3:0]  b,      // 4 бит на синий
-    output              hs,     // горизонтальная развертка
-    output              vs,     // вертикальная развертка
-    output              int,    // Срабатывает на x=0,y=0
+    output  reg  [3:0]  r,          // 4 бит на красный
+    output  reg  [3:0]  g,          // 4 бит на зеленый
+    output  reg  [3:0]  b,          // 4 бит на синий
+    output              hs,         // горизонтальная развертка
+    output              vs,         // вертикальная развертка
+    output              int,        // Срабатывает на x=0,y=0
 
     // Доступ к памяти
     output  reg  [16:0] char_address,
@@ -20,7 +20,8 @@ module video
     input        [ 7:0] font_data,
 
     // Внешний интерфейс
-    input        [10:0] cursor   // Положение курсора от 0 до 2047
+    input        [ 1:0] vmode,      // Видеорежим
+    input        [10:0] cursor      // Положение курсора от 0 до 2047
 );
 
 // ---------------------------------------------------------------------
@@ -44,6 +45,7 @@ wire        ymax = (y == vt_whole - 1);
 reg  [10:0] x    = 0;
 reg  [10:0] y    = 0;
 wire [10:0] X    = x - hz_back + 8; // X=[0..639]
+wire [10:0] Xg   = x - hz_back + 4;
 wire [ 9:0] Y    = y - vt_back;     // Y=[0..399]
 // ---------------------------------------------------------------------
 reg         flash;
@@ -82,25 +84,34 @@ always @(posedge clock) begin
     y <= xmax ? (ymax ? 0 : y + 1) : y;
 
     // Вывод окна видеоадаптера
-    if (x >= hz_back && x < hz_visible + hz_back &&
-        y >= vt_back && y < vt_visible + vt_back)
-    begin
-         {r, g, b} <= color;
+    if (x >= hz_back && x < hz_visible + hz_back && y >= vt_back && y < vt_visible + vt_back) begin
+        case (vmode)
+        0: {r, g, b} <= color;
+        1: {r, g, b} <= {char[7:5],1'b0, char[4:2],1'b0, char[1:0], 2'b00}; // 3:3:2
+        endcase
     end
     else {r, g, b} <= 12'h000;
 
-    // Извлечение текущей маски
-    case (X[2:0])
+    case (vmode)
 
+    // Видеорежим 80x25
+    0:  case (X[2:0])
         0: begin char_address <= {6'hF, id[10:0], 1'b0}; end
         2: begin font_address <= {char_data, Y[3:0]}; end
         4: begin char_address <= {6'hF, id[10:0], 1'b1}; end
         7: begin {attr, char} <= {char_data, font_data}; end
+        endcase
+
+    // 320x200x256 colors
+    1:  case (Xg[0])
+        0: begin char_address <= 17'hF000 + Xg[10:1] + Y[9:1]*320; end
+        1: begin char <= char_data; end
+        endcase
 
     endcase
 
     // Каждые 0,5 секунды перебрасывается регистр flash
-    if (timer == 12500000) begin
+    if (timer == 12500000-1) begin
         timer <= 0;
         flash <= ~flash;
     end else

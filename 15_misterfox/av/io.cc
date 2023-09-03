@@ -86,7 +86,9 @@ void AVR::update_vm_byte(int A) {
                 t0 = (A - 0xF000);
                 t1 = t0 % 320;
                 t2 = t0 / 320;
-                t0 = DOS_13[sram[A]];
+                // t0 = DOS_13[sram[A]];
+                t0 = sram[A];
+                t0 = /*R*/ 65536*(t0 & 0xE0) + /*G*/ 256*8*(t0 & 0x1C) + /*B*/ (t0 & 3)*64;
 
                 t1 *= 2;
                 t2 *= 2;

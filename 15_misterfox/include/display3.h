@@ -1,5 +1,5 @@
-#ifndef __DISPLAY_HFILE
-#define __DISPLAY_HFILE
+#ifndef __DISPLAY3_HFILE
+#define __DISPLAY3_HFILE
 
 #include "avrio.h"
 
@@ -13,6 +13,8 @@ public:
     void cls(byte _attr = 0x07) {
 
         heapvm;
+
+        outp(VMODE, VM_80x25);
 
         attr = _attr;
         locate(0, 0);
