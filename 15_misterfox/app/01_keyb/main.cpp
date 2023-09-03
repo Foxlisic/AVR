@@ -1,7 +1,7 @@
 #include <avrio.h>
-#include <display.h>
+#include <display3.h>
 
-Display D;
+Display3 D;
 
 ISR(INT1_vect) {
 

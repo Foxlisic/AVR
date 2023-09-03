@@ -1,17 +1,16 @@
 #include <avrio.h>
-#include <display.h>
+#include <display3.h>
 #include <sd.h>
 
-Display D;
-SD      sd;
-byte    sector[512];
+Display3 D;
+SD       sd;
+byte     sector[512];
 
 int main() {
 
     D.cls();
 
-    heapvm;
-    sd.read (0, vm);
+    sd.read (0, sector);
 
     for(;;);
 }
