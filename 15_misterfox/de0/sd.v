@@ -21,11 +21,6 @@ module sd
 
 `define SPI_TIMEOUT_CNT     2500000
 
-initial begin
-
-
-end
-
 assign sd_timeout = (sd_timeout_cnt == `SPI_TIMEOUT_CNT);
 
 reg  [24:0] sd_timeout_cnt;
@@ -46,8 +41,7 @@ if (reset_n == 1'b0) begin
     sd_din          <= 8'h00;
     sd_busy         <= 1'b0;
 
-end
-else begin
+end else begin
 
     if (sd_timeout_cnt < `SPI_TIMEOUT_CNT && spi_process == 0)
         sd_timeout_cnt <= sd_timeout_cnt + 1;
@@ -90,7 +84,6 @@ else begin
 
                 if (spi_counter == 7) begin
 
-                    SPI_SCLK    <= 0;
                     SPI_MOSI    <= 0;
                     sd_busy     <= 0;
                     spi_counter <= 0;
