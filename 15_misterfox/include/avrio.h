@@ -2,6 +2,9 @@
 #define __AVRIO_HFILE
 
 #include <avr/interrupt.h>
+#include <avr/pgmspace.h>
+
+#define LPM(x) pgm_read_byte(&x)
 
 // Ссылка на пустой адрес
 #define NULL    ((void*)0)

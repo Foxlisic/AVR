@@ -55,10 +55,20 @@ public:
     }
 
     // Печать символов на экране
-    void print(const char* m) {
+    int print(const char* m) {
 
         int i = 0;
         while (m[i]) prn(m[i++]);
+        return i;
+    }
+
+    // Печать строки из Program memory
+    int print_pgm(const char* m) {
+
+        int i = 0;
+        char ch;
+        while ((ch = pgm_read_byte(& m[i++]))) prn(ch);
+        return i;
     }
 
     // Печать числа от -32767 до 32767
