@@ -98,28 +98,9 @@ pll PLL0
     .locked    (locked)
 );
 
+
 // -----------------------------------------------------------------------------
 // ПАМЯТЬ
-// -----------------------------------------------------------------------------
-
-wire [15:0] pc, ir;
-wire [15:0] address;
-wire [ 7:0] data_o, data_m1;
-wire        we, read;
-
-// Учесть банки памяти
-wire [16:0] cpu_address = address + (address >= 16'hF000 ?  bank*4096 : 0);
-
-// Роутер памяти и портов
-wire [ 7:0] data_i =
-    address == 16'h20 ? bank        :
-    address == 16'h21 ? vmode       :
-    address == 16'h22 ? kb_data_in  :
-    address == 16'h2E ? curx        :
-    address == 16'h2F ? cury        :
-    address == 16'h30 ? intmask     :
-                        data_m1;
-
 // -----------------------------------------------------------------------------
 
 // Память программ 128K
@@ -156,17 +137,40 @@ mem_font M2
 
 reg [7:0]   bank;
 reg [1:0]   vmode;
-reg [7:0]   spi_cmd;
-reg [1:0]   spi_ctl;    // 0-PUT, 1-INIT, 2-CE0, 3-CE1
-reg         spi;        // Если 1, то команда отправлена
-reg         irq_ack;
-reg [2:0]   irq_queue;
-reg [2:0]   intmask;
+
+// SD
+reg         sd_signal;  // Если 1, то команда отправлена
+reg  [1:0]  sd_cmd;     // 0-PUT, 1-INIT, 2-CE0, 3-CE1
+reg  [7:0]  sd_out;
+wire [7:0]  sd_din;
+wire        sd_busy, sd_timeout;
+
+// IRQ
+reg         irq_ack;    // =1 Прерывание обрабатывается
+reg [2:0]   irq_queue;  // Очередь прерываний
+reg [2:0]   intmask;    // =1 Разрешить прерывания
+reg         intr;       // -> К процессору
+reg [ 2:0]  vect;       // Номер текущего прерывания
+
+// Учесть банки памяти
+wire [16:0] cpu_address = address + (address >= 16'hF000 ?  bank*4096 : 0);
+
+// Роутер памяти и портов
+wire [ 7:0] data_i =
+    address == 16'h20 ? bank        :
+    address == 16'h21 ? vmode       :
+    address == 16'h22 ? kb_data_in  :
+    address == 16'h2C ? sd_din      :
+    address == 16'h2D ? {sd_timeout, sd_busy} :
+    address == 16'h2E ? curx        :
+    address == 16'h2F ? cury        :
+    address == 16'h30 ? intmask     :
+                        data_m1;
 
 always @(posedge clock_25)
 begin
 
-    spi <= 0;
+    sd_signal <= 0;
 
     if (we)
     case (address)
@@ -174,10 +178,10 @@ begin
         16'h20: begin bank      <= data_o; end
         16'h21: begin vmode     <= data_o[1:0]; end
         16'h22: begin irq_ack   <= 0; end
-        16'h2C: begin spi       <= 1; spi_ctl <= 0; spi_cmd <= data_o; end
-        16'h2D: begin spi       <= 1; spi_ctl <= data_o; end
-        16'h2E: begin cursor    <= data_o + 80*cury  ; curx <= data_o; end
-        16'h2F: begin cursor    <= curx   + 80*data_o; cury <= data_o; end
+        16'h2C: begin sd_signal <= 1; sd_cmd <= 0;      sd_out <= data_o; end
+        16'h2D: begin sd_signal <= 1; sd_cmd <= data_o; sd_out <= 8'hFF; end
+        16'h2E: begin cursor    <= data_o + 80*cury;    curx <= data_o; end
+        16'h2F: begin cursor    <= curx   + 80*data_o;  cury <= data_o; end
         16'h30: begin intmask   <= data_o; end
 
     endcase
@@ -254,11 +258,39 @@ ps2 PS2KEYB
 );
 
 // -----------------------------------------------------------------------------
-// ЦЕНТРАЛЬНЫЙ ПРОЦЕССОР
+// КОНТРОЛЛЕР SD
 // -----------------------------------------------------------------------------
 
-reg         intr = 1'b0;
-reg [ 2:0]  vect = 3'h0;
+sd UnitSPI
+(
+    // 50 Mhz
+    .clock      (clock_25),
+    .reset_n    (locked),
+
+    // Физический интерфейс
+    .SPI_CS     (SD_DATA[3]),  // Выбор чипа
+    .SPI_SCLK   (SD_CLK),      // Тактовая частота
+    .SPI_MISO   (SD_DATA[0]),  // Входящие данные
+    .SPI_MOSI   (SD_CMD),      // Исходящие
+
+    // Ввод
+    .sd_signal  (sd_signal),
+    .sd_cmd     (sd_cmd),
+    .sd_out     (sd_out),
+
+    // Вывод
+    .sd_din     (sd_din),
+    .sd_busy    (sd_busy),
+    .sd_timeout (sd_timeout),
+);
+
+// -----------------------------------------------------------------------------
+// ЦЕНТРАЛЬНЫЙ ПРОЦЕССОР
+// -----------------------------------------------------------------------------
+wire [15:0] pc, ir;
+wire [15:0] address;
+wire [ 7:0] data_o, data_m1;
+wire        we, read;
 
 core COREAVR
 (

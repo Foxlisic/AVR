@@ -8,7 +8,7 @@ COMPILE = avr-gcc \
 	-DF_CPU=$(CLOCK) \
 	-mmcu=$(DEVICE) \
 	-fdata-sections \
-	-Wl,--gc-sections,--defsym=__stack=0x80efff,--defsym=__heap_end=0x80efff
+	-Wl,--gc-sections,--defsym=__stack=0x80e3ff,--defsym=__heap_end=0x80e3ff
 
 all: com win
 

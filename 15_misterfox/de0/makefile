@@ -1,6 +1,7 @@
-all: cdb pgm
+#all: cdb pgm
+all: ica
 ica:
-	iverilog -g2005-sv -DICARUS=1 -o tb.qqq tb.v core.v
+	iverilog -g2005-sv -DICARUS=1 -o tb.qqq tb.v core.v sd.v
 	vvp tb.qqq >> /dev/null
 vcd:
 	gtkwave tb.vcd

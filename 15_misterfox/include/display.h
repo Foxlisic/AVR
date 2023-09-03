@@ -83,6 +83,17 @@ public:
         int i = 0;
         while (m[i]) prn(m[i++]);
     }
+
+    // Печать числа от -32767 до 32767
+    void printi(int x) {
+
+        int  id = 0;
+        char t[6];
+
+        if (x < 0) { prn('-'); x = -x; }
+        do { int a = x % 10; x = x / 10; t[id++] = '0' + a; } while (x);
+        while (--id >= 0) prn(t[id]);
+    }
 };
 
 #endif

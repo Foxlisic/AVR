@@ -11,6 +11,7 @@ always #2.0 clock_25 = ~clock_25;
 // ---------------------------------------------------------------------
 initial begin reset_n = 0; clock = 0; clock_25 = 0; #3 reset_n = 1; #2000 $finish; end
 initial begin $dumpfile("tb.vcd"); $dumpvars(0, tb); end
+initial begin $readmemh("tb.hex", pgm); end
 // ---------------------------------------------------------------------
 reg  [15:0] pgm[65536];
 reg  [ 7:0] mem[128*1024];
@@ -23,6 +24,12 @@ always @(posedge clock) begin
     if (we) mem[address] <= data_o;
 
 end
+
+// Роутер памяти и портов
+wire [ 7:0] in =
+    address == 16'h2C ? sd_din      :
+    address == 16'h2D ? {sd_timeout, sd_busy} :
+                        data_i;
 
 // ---------------------------------------------------------------------
 
@@ -43,7 +50,7 @@ core COREAVR
     .ir         (ir),          // Инструкция из памяти
     // Оперативная память
     .address    (address),     // Указатель на память RAM (sram)
-    .data_i     (data_i),      // = memory[ address ]
+    .data_i     (in),           // = memory[ address ]
     .data_o     (data_o),      // Запись в память по address
     .we         (we),          // Разрешение записи в память
     // Внешнее прерывание #0..7
@@ -52,5 +59,61 @@ core COREAVR
     // Чтение из памяти
     .read       (read)
 );
+
+// ---------------------------------------------------------------------
+// ПОРТЫ
+// ---------------------------------------------------------------------
+
+always @(posedge clock_25)
+begin
+
+    sd_signal <= 0;
+
+    if (we)
+    case (address)
+
+        16'h2C: begin sd_signal <= 1; sd_cmd <= 0;      sd_out <= data_o; end
+        16'h2D: begin sd_signal <= 1; sd_cmd <= data_o; sd_out <= 8'hFF; end
+
+    endcase
+
+end
+
+// ---------------------------------------------------------------------
+// КОНТРОЛЛЕРЫ
+// ---------------------------------------------------------------------
+
+wire SD_CS, SD_CLK, SD_MOSI;
+wire SD_MISO = 1'b1;
+wire sd_busy, sd_timeout;
+
+reg         sd_signal;
+reg  [1:0]  sd_cmd;
+reg  [7:0]  sd_out;
+wire [7:0]  sd_din;
+
+sd UnitSPI
+(
+    // 50 Mhz
+    .clock      (clock_25),
+    .reset_n    (reset_n),
+
+    // Физический интерфейс
+    .SPI_CS     (SD_CS),        // Выбор чипа
+    .SPI_SCLK   (SD_CLK),       // Тактовая частота
+    .SPI_MISO   (SD_MISO),      // Входящие данные
+    .SPI_MOSI   (SD_MOSI),      // Исходящие
+
+    // Ввод
+    .sd_signal  (sd_signal),
+    .sd_cmd     (sd_cmd),
+    .sd_out     (sd_out),
+
+    // Вывод
+    .sd_din     (sd_din),
+    .sd_busy    (sd_busy),
+    .sd_timeout (sd_timeout)
+);
+
 
 endmodule
