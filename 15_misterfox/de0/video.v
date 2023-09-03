@@ -45,7 +45,7 @@ wire        ymax = (y == vt_whole - 1);
 reg  [10:0] x    = 0;
 reg  [10:0] y    = 0;
 wire [10:0] X    = x - hz_back + 8; // X=[0..639]
-wire [10:0] Xg   = x - hz_back + 4;
+wire [10:0] Xg   = x - hz_back + 2;
 wire [ 9:0] Y    = y - vt_back;     // Y=[0..399]
 // ---------------------------------------------------------------------
 reg         flash;

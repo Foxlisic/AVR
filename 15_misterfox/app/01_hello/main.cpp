@@ -20,7 +20,8 @@ void hello_13() {
     D.cls(4);
 
     for (int y = 0; y < 200; y++)
-        D.pset(0, y, 3);
+    for (int x = 0; x < 320; x++)
+        D.pset(x, y, x*y>>8);
 }
 
 int main() {

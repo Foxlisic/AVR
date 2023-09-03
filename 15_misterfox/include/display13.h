@@ -2,6 +2,7 @@
 #define __DISPLAY13_HFILE
 
 #include "avrio.h"
+#include "tahoma.h"
 
 class Display13 {
 public:
