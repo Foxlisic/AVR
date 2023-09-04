@@ -1,7 +1,11 @@
 #include <avrio.h>
 #include <display3.h>
 #include <display13.h>
+#include <displayzx.h>
 
+#include "scr/wall_5.h"
+
+// Текстовый экран
 void hello_3() {
 
     Display3 D;
@@ -14,6 +18,7 @@ void hello_3() {
     D.print("HELLO WORLD!");
 }
 
+// Экран 320x200
 void hello_13() {
 
     Display13 D;
@@ -24,7 +29,18 @@ void hello_13() {
         D.pset(x, y, x*y>>8);
 }
 
+// Спектрум-экран
+void hello_zx() {
+
+    DisplayZX D;
+
+    D.cls();
+
+    heapzx;
+    for (int i = 0; i < 6912; i++) vm[i] = pgm_read_byte(&WALLPAPER[i]);
+}
+
 int main() {
 
-    hello_13();
+    hello_zx();
 }

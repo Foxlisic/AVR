@@ -72,6 +72,13 @@ static const int DOS_13[256] =
     0x000000, 0x000000, 0x000000, 0x000000, 0x000000, 0x000000, 0x000000, 0x000000  // F8
 };
 
+static const int ZXCOLOR[16] = {
+    0x000000, 0x0000c0, 0xc00000, 0xc000c0,
+    0x00c000, 0x00c0c0, 0xc0c000, 0xc0c0c0,
+    0x000000, 0x0000ff, 0xff0000, 0xff00ff,
+    0x00ff00, 0x00ffff, 0xffff00, 0xffffff,
+};
+
 class AVR {
 protected:
 
@@ -92,7 +99,7 @@ public:
     // Открытые поля
     int     kb_code, mx, my, ms, mb;
     int     kb[256], kb_id = 0;
-    int     fore  = 0xFFFFFF, back = 0x000000;
+    int     fore  = 0xFFFFFF, back = 0x000000, zxborder = 0;
     int     loc_x = 0, loc_y = 0;
     int     cur_x = 0, cur_y, cur_flash = 0;
     int     debug = 0;
@@ -141,6 +148,7 @@ public:
     // IO
     void        switch_vm(uint8_t);
     void        update_vm_byte(int A);
+    void        zxbyte_screen(int A);
 
     // Процессор
     void        assign();

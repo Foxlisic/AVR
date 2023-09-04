@@ -18,6 +18,7 @@ uint8_t AVR::get(uint16_t addr) {
         case 0x2E: return cur_x;
         case 0x2F: return cur_y;
         case 0x30: return intr_mask;
+        case 0x31: return zxborder;
 
         // Остальная память
         default: return sram[A];
@@ -43,6 +44,7 @@ void AVR::put(uint16_t addr, uint8_t value) {
         case 0x2E: cur_x = value; break;        // Курсор X
         case 0x2F: cur_y = value; break;        // Курсор Y
         case 0x30: intr_mask = value; break;    // Маски прерываний
+        case 0x31: zxborder = value & 7; break; // Бордер экрана ZX
     }
 
     // Запись в память
@@ -57,7 +59,7 @@ void AVR::put(uint16_t addr, uint8_t value) {
 // Запись в видеопамять
 void AVR::update_vm_byte(int A) {
 
-    int t0, t1, t2;
+    int t0, t1, t2, t3, cl;
 
     switch (videomode) {
 
@@ -99,6 +101,57 @@ void AVR::update_vm_byte(int A) {
                 pset(t1+1, t2+1, t0);
             }
             break;
+
+        // Видеорежим ZX Spectrum экрана
+        case 2:
+
+            // 6K + 768B
+            if (A >= 0xE400 && A < 0xFF00) {
+                A -= 0xE400;
+
+                if      (A <  0x1800) zxbyte_screen(A);
+                else if (A <= 0x1B00) {
+
+                    t0   = A - 0x1800;
+                    t0 >>= 5;
+                    t0   = 2048*(t0 >> 3) + 32*(t0 & 7) + (A & 31);
+
+                    // Обновить 8 байт
+                    for (int i = 0; i < 8; i++) zxbyte_screen(t0 + 256*i);
+                }
+            }
+
+            break;
+    }
+}
+
+// Обновление байта экранной области спектрумского экрана
+void AVR::zxbyte_screen(int A) {
+
+    int x    = 8*(A & 31);
+    int y    = 64*((A >> 11) & 3) + 8*((A >> 5) & 7) + ((A >> 8) & 7);
+    int chr  = sram[0xE400 + A];
+    int attr = sram[0xFC00 + (A & 31) + 32*(y >> 3)];
+
+    x = 64 + 2*x;
+    y = 8  + 2*y;
+
+    for (int i = 0; i < 8; i++) {
+
+        int fl = (attr & 0x80) && (cur_flash >= 12) ? 0xFF : 0x00;
+        int bg = 7 & (attr >> 3),
+            fr = 7 & attr;
+        int cl = (fl ^ chr) & (1 << (7 - i)) ? fr : bg;
+        if (attr & 0x40) cl = cl ? cl + 8 : cl;
+
+        cl = ZXCOLOR[cl];
+
+        pset(x,   y,   cl);
+        pset(x+1, y,   cl);
+        pset(x,   y+1, cl);
+        pset(x+1, y+1, cl);
+
+        x += 2;
     }
 }
 
@@ -110,20 +163,13 @@ void AVR::switch_vm(uint8_t new_vm) {
     switch (videomode) {
 
         // 80x25 Текстовый режим
-        case 0:
-
-            for (int i = 0xF000; i < 0x10000; i += 2)
-                update_vm_byte(i);
-
-            break;
+        case 0: for (int i = 0xF000; i < 0x10000; i += 2) update_vm_byte(i); break;
 
         // 320x200x256
-        case 1:
+        case 1: for (int i = 0xF000; i < 0x1F000; i++) update_vm_byte(i); break;
 
-            for (int i = 0xF000; i < 0x1F000; i++)
-                update_vm_byte(i);
-
-            break;
+        // ZX Spectrum
+        case 2: for (int i = 0xE400; i < 0x0FF00; i++) update_vm_byte(i); break;
     }
 }
 

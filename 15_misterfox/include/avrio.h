@@ -57,6 +57,7 @@ inline void outp(int port, unsigned char val) {
 // Объявление указателя на память (имя x, адрес a)
 #define heap(x, a)  byte* x = (byte*) a
 #define heapvm      byte* vm = (byte*) 0xF000
+#define heapzx      byte* vm = (byte*) 0xE400
 #define bank(x)     outp(BANK, x)
 #define vmode(x)    outp(VMODE, x)
 #define eoi         outp(KEYB, 255)

@@ -7,18 +7,17 @@ module core
     input               clock,
     input               reset_n,
     // Программная память
-    output reg  [15:0]  pc,          // Программный счетчик
-    input       [15:0]  ir,          // Инструкция из памяти
+    output reg  [15:0]  pc,         // Программный счетчик
+    input       [15:0]  ir,         // Инструкция из памяти
     // Оперативная память
-    output reg  [15:0]  address,     // Указатель на память RAM (sram)
-    input       [ 7:0]  data_i,      // = memory[ address ]
-    output reg  [ 7:0]  data_o,      // Запись в память по address
-    output reg          we,          // Разрешение записи в память
+    output reg  [15:0]  address,    // Указатель на память RAM (sram)
+    input       [ 7:0]  data_i,     // = memory[ address ]
+    output reg  [ 7:0]  data_o,     // Запись в память по address
+    output reg          we,         // =1 Запись в память
+    output reg          read,       // =1 Запрос чтения из памяти
     // Внешнее прерывание #0..7
     input               intr,
-    input       [ 2:0]  vect,
-    // Чтение из памяти
-    output reg          read
+    input       [ 2:0]  vect
 );
 initial begin
     address = 1'b0;
@@ -296,13 +295,15 @@ else begin
         case (tstate)
             // Указатель адреса
             0: begin
-                tstate  <= 1;
-                address <= sp + 1;
-                sp_mth  <= SPINC;
+                tstate   <= 1;
+                read     <= 1;
+                address  <= sp + 1;
+                sp_mth   <= SPINC;
             end
             // Чтение PCH
             1: begin
                 tstate   <= 2;
+                read     <= 1;
                 pc[15:8] <= din;
                 address  <= sp + 1;
                 sp_mth   <= SPINC;
@@ -331,7 +332,8 @@ else begin
                 tstate <= opcode[9] ? 0 : 1;
                 pc     <= pcnext;
                 data_o <= r[rd];
-                we     <= opcode[9];
+                we     <=  opcode[9];
+                read   <= !opcode[9];
                 // Выбор адреса
                 case (opcode[3:0])
                     4'b11_00: begin address <= X;  end
@@ -350,7 +352,6 @@ else begin
                 op2     <= din;
                 reg_w   <= 1;
                 reg_id  <= rd;
-                read    <= 1;
             end
         endcase
         // [2T] LDD Y+q, Z+q
@@ -363,7 +364,8 @@ else begin
                 pc      <= pcnext;
                 address <= (opcode[3] ? Y : Z) + q;
                 data_o  <= r[rd];
-                we      <= opcode[9];
+                we      <=  opcode[9];
+                read    <= !opcode[9];
             end
             // Запись в регистр Rd
             1: begin
@@ -470,7 +472,8 @@ else begin
                 tstate  <= opcode[11] ? 0 : 1;
                 pc      <= pcnext;
                 data_o  <= r[rd];
-                we      <= opcode[11];
+                we      <=  opcode[11];
+                read    <= !opcode[11];
                 address <= {opcode[10:9], opcode[3:0]} + 16'h20;
             end
             // Запись регистра
@@ -480,7 +483,6 @@ else begin
                 op2     <= din;
                 reg_id  <= rd;
                 reg_w   <= 1;
-                read    <= 1;
             end
         endcase
         // [1T] SBR[C,S] Rd, b
@@ -497,13 +499,13 @@ else begin
             // Запрос чтения
             0: begin
                 tstate  <= 1;
+                read    <= 1;
                 address <= opcode[7:3] + 16'h20;
             end
             // Вычисление бита
             1: begin
                 tstate  <= 0;
                 pc      <= pcnext;
-                read    <= 1;
                 if (din[ opcode[2:0] ] == opcode[9])
                     skip_instr <= 1;
             end
@@ -529,7 +531,8 @@ else begin
                 reg_id  <= rd;
                 address <= ir;
                 data_o  <= r[rd];
-                we      <= opcode[9];
+                we      <=  opcode[9];
+                read    <= !opcode[9];
             end
             // Запись в регистр
             2: begin
@@ -537,7 +540,6 @@ else begin
                 alu    <= 0;
                 reg_w  <= 1;
                 op2    <= din;
-                read   <= 1;
             end
         endcase
         // [1T] BCLR, BSET
@@ -573,6 +575,7 @@ else begin
                 pc      <= pcnext;
                 address <= sp + 1;
                 sp_mth  <= SPINC;
+                read    <= 1;
             end
             // Запись в регистр
             1: begin
@@ -581,7 +584,6 @@ else begin
                 op2     <= din;
                 reg_id  <= rd;
                 reg_w   <= 1;
-                read    <= 1;
             end
         endcase
         // [1T] BST Rd, b
@@ -606,6 +608,7 @@ else begin
             // Чтение из порта
             0: begin
                 tstate  <= 1;
+                read    <= 1;
                 pc      <= pcnext;
                 address <= opcode[7:3] + 16'h20;
             end

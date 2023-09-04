@@ -137,6 +137,7 @@ mem_font M2
 
 reg [7:0]   bank;
 reg [1:0]   vmode;
+reg [2:0]   zxborder;
 
 // SD
 reg         sd_signal;  // Если 1, то команда отправлена
@@ -165,6 +166,7 @@ wire [ 7:0] data_i =
     address == 16'h2E ? curx        :
     address == 16'h2F ? cury        :
     address == 16'h30 ? intmask     :
+    address == 16'h31 ? zxborder    :
                         data_m1;
 
 always @(posedge clock_25)
@@ -183,6 +185,7 @@ begin
         16'h2E: begin cursor    <= data_o + 80*cury;    curx <= data_o; end
         16'h2F: begin cursor    <= curx   + 80*data_o;  cury <= data_o; end
         16'h30: begin intmask   <= data_o; end
+        16'h31: begin zxborder  <= data_o; end
 
     endcase
 

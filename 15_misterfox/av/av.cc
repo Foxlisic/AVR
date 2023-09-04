@@ -140,7 +140,10 @@ void AVR::frame() {
     cur_flash = (cur_flash < 25) ? cur_flash + 1 : 0;
 
     // Обновить экран при каждом мигании
-    if ((cur_flash == 0 || cur_flash == 12) && videomode == 0) switch_vm(0);
+    if (cur_flash == 0 || cur_flash == 12) {
+        if (videomode == 0 || videomode == 2)
+            switch_vm(videomode);
+    }
 }
 
 // Ожидание событий
