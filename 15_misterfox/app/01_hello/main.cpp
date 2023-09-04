@@ -33,7 +33,6 @@ void hello_13() {
 void hello_zx() {
 
     DisplayZX D;
-
     D.cls();
 
     heapzx;

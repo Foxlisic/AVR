@@ -225,19 +225,20 @@ wire        ga_int;
 video U1
 (
     // Опорная частота 25 мгц
-    .clock  (clock_25),
+    .clock      (clock_25),
 
     // Настройки
-    .vmode  (vmode),
-    .cursor (cursor),
+    .vmode      (vmode),
+    .cursor     (cursor),
+    .border     (zxborder),
 
     // Выходные данные
-    .r      (VGA_R),
-    .g      (VGA_G),
-    .b      (VGA_B),
-    .hs     (VGA_HS),
-    .vs     (VGA_VS),
-    .int    (ga_int),
+    .r          (VGA_R),
+    .g          (VGA_G),
+    .b          (VGA_B),
+    .hs         (VGA_HS),
+    .vs         (VGA_VS),
+    .int        (ga_int),
 
     // Доступ к памяти
     .char_address   (char_address),
@@ -302,6 +303,7 @@ core COREAVR
 (
     .clock      (clock_25),
     .reset_n    (locked),
+    .ce         (1'b1),
     // Программная память
     .pc         (pc),          // Программный счетчик
     .ir         (ir),          // Инструкция из памяти

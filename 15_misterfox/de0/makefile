@@ -1,4 +1,4 @@
-#all: cdb pgm
+#all: cdb
 all: ica
 ica:
 	iverilog -g2005-sv -DICARUS=1 -o tb.qqq tb.v core.v sd.v
@@ -12,11 +12,12 @@ syn:
 	quartus_fit --read_settings_files=off --write_settings_files=off de0 -c de0
 	quartus_asm --read_settings_files=on  --write_settings_files=off de0 -c de0
 	make pgm
-pgm:
-	quartus_pgm -m jtag -o "p;output_files/de0.sof"
 cdb:
 	quartus_cdb de0 -c de0 --update_mif
 	quartus_asm --read_settings_files=on --write_settings_files=off de0 -c de0
+	make pgm
+pgm:
+	quartus_pgm -m jtag -o "p;output_files/de0.sof"
 sta:
 	quartus_sta de0 -c de0
 clean:

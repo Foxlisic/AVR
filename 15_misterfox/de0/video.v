@@ -21,6 +21,7 @@ module video
 
     // Внешний интерфейс
     input        [ 1:0] vmode,      // Видеорежим
+    input        [ 2:0] border,     // ZX Border color
     input        [10:0] cursor      // Положение курсора от 0 до 2047
 );
 
@@ -47,11 +48,12 @@ reg  [10:0] y    = 0;
 wire [10:0] X    = x - hz_back + 8; // X=[0..639]
 wire [10:0] Xg   = x - hz_back + 2;
 wire [ 9:0] Y    = y - vt_back;     // Y=[0..399]
+wire [ 7:0] Xs   = X[9:1] - 24;
+wire [ 7:0] Ys   = Y[9:1] - 4;
 // ---------------------------------------------------------------------
 reg         flash;
-reg  [ 7:0] attr;
-reg  [ 7:0] char;
 reg  [23:0] timer;
+reg  [ 7:0] attr, char, tchr;
 // ---------------------------------------------------------------------
 
 wire [10:0] id = X[9:3] + (Y[8:4] * 80);
@@ -76,6 +78,22 @@ wire [15:0] color =
     kcolor == 4'hE ? 12'hFF0 : // 14 Желтый
                      12'hFFF;  // 15 Белый
 
+// ZX Spectrum
+// ---------------------------------------------------------------------
+
+wire        current_bit = char[ 7 ^ Xs[2:0] ];
+wire        flashed_bit = (attr[7] & flash) ^ current_bit;
+wire        is_paper    = (X >= 64 && X < (64 + 512) && Y >= 48 && Y < (48 + 384));
+wire [3:0]  src_color   = is_paper ? {attr[6], flashed_bit ? attr[2:0] : attr[5:3]} : border[2:0];
+
+// Вычисляем цвет. Если бит 3=1, то цвет яркий, иначе обычного оттенка (половинной яркости)
+wire [11:0] zxcolor =
+{
+    /* Красный цвет - это бит 1 */ src_color[1] ? (src_color[3] ? 4'hF : 4'hC) : 4'h01,
+    /* Зеленый цвет - это бит 2 */ src_color[2] ? (src_color[3] ? 4'hF : 4'hC) : 4'h01,
+    /* Синий цвет   - это бит 0 */ src_color[0] ? (src_color[3] ? 4'hF : 4'hC) : 4'h01
+};
+
 // Вывод видеосигнала
 always @(posedge clock) begin
 
@@ -88,10 +106,12 @@ always @(posedge clock) begin
         case (vmode)
         0: {r, g, b} <= color;
         1: {r, g, b} <= {char[7:5],1'b0, char[4:2],1'b0, char[1:0], 2'b00}; // 3:3:2
+        2: {r, g, b} <= zxcolor;
         endcase
     end
     else {r, g, b} <= 12'h000;
 
+    // Выборка данных
     case (vmode)
 
     // Видеорежим 80x25
@@ -106,6 +126,13 @@ always @(posedge clock) begin
     1:  case (Xg[0])
         0: begin char_address <= 17'hF000 + Xg[10:1] + Y[9:1]*320; end
         1: begin char <= char_data; end
+        endcase
+
+    // ZX Spectrum
+    2:  case (X[3:0])
+        0:  begin char_address <= 17'hE400 + {Ys[7:6], Ys[2:0], Ys[5:3], Xs[7:3]}; end
+        1:  begin char_address <= 17'hE400 + {3'b110,  Ys[7:3],          Xs[7:3]}; tchr <= char_data; end
+        15: begin {char, attr} <= {tchr, char_data}; end
         endcase
 
     endcase
