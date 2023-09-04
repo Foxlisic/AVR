@@ -3,7 +3,7 @@
 #include <display13.h>
 #include <displayzx.h>
 
-#include "scr/wall_5.h"
+#include "scr/wall_4.h"
 
 // Текстовый экран
 void hello_3() {

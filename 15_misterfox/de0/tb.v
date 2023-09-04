@@ -9,7 +9,7 @@ reg reset_n;
 always #0.5 clock    = ~clock;
 always #2.0 clock_25 = ~clock_25;
 // ---------------------------------------------------------------------
-initial begin reset_n = 0; clock = 1; clock_25 = 0; #3 reset_n = 1; #2000 $finish; end
+initial begin reset_n = 0; clock = 1; clock_25 = 0; #3.5 reset_n = 1; #2000 $finish; end
 initial begin $dumpfile("tb.vcd"); $dumpvars(0, tb); end
 initial begin $readmemh("tb.hex", pgm); end
 // ---------------------------------------------------------------------
@@ -39,13 +39,15 @@ wire [15:0] pc, address;
 reg  [15:0] ir;
 reg  [ 7:0] data_i;
 wire [ 7:0] data_o;
-wire        we, read;
+wire        we, read, ce;
+wire        clk_out;
+wire [25:0] address_26 = address;
 
 core COREAVR
 (
     .clock      (clock_25),
     .reset_n    (reset_n),
-    .ce         (1'b1),
+    .ce         (ce),
     // Программная память
     .pc         (pc),           // Программный счетчик
     .ir         (ir),          // Инструкция из памяти
@@ -115,5 +117,23 @@ sd UnitSPI
     .sd_timeout (sd_timeout)
 );
 
+// ---------------------------------------------------------------------
+// SDRAM
+// ---------------------------------------------------------------------
+
+sdram SDRAM
+(
+    // Физический интерфейс
+    .reset_n        (reset_n),
+    .clk_in         (clock),
+    .clk_out        (clk_out),
+    
+    // Сигналы от процессора
+    .clk_cpu        (clock_25),
+    .read           (read),
+    .write          (we),
+    .address        (address_26),
+    .ce             (ce)
+);
 
 endmodule

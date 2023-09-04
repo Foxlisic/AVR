@@ -15,7 +15,7 @@ all: com win
 win:
 	make.bat
 lin:
-	../../av/avemu
+	../../av/avemu main.bin
 com:
 	$(COMPILE) main.cpp -o main.elf
 	avr-objcopy -j .text -j .data -O binary main.elf main.bin

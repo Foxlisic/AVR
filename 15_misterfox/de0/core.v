@@ -130,6 +130,8 @@ always @(posedge clock)
 if (reset_n == 1'b0) begin
     pc      <= 1'b0;
     tstate  <= 1'b0;
+    read    <= 1'b0;
+    we      <= 1'b0;
 end
 // Рабочее состояние
 else if (ce) begin
