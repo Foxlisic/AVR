@@ -125,8 +125,8 @@ sdram SDRAM
 (
     // Физический интерфейс
     .reset_n        (reset_n),
-    .clk_in         (clock),
-    .clk_out        (clk_out),
+    .clock          (clock),
+    .dram_clk       (clk_out),
 
     // Сигналы от процессора
     .clk_cpu        (clock_25),

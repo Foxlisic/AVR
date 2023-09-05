@@ -83,7 +83,7 @@ wire [15:0] color =
 
 wire        current_bit = char[ 7 ^ Xs[2:0] ];
 wire        flashed_bit = (attr[7] & flash) ^ current_bit;
-wire        is_paper    = (X >= 64 && X < (64 + 512) && Y >= 48 && Y < (48 + 384));
+wire        is_paper    = (X >= 64 && X < (64 + 512) && Y >= 8 && Y < (8 + 384));
 wire [3:0]  src_color   = is_paper ? {attr[6], flashed_bit ? attr[2:0] : attr[5:3]} : border[2:0];
 
 // Вычисляем цвет. Если бит 3=1, то цвет яркий, иначе обычного оттенка (половинной яркости)

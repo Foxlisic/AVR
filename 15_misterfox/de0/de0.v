@@ -115,10 +115,10 @@ mem_prg M0
 mem_ram M1
 (
     .clock  (clock_100),
-    .a0     (cpu_address),
+    .a0     (A26[16:0]),
     .q0     (data_m1),
     .d0     (data_o),
-    .w0     (we),
+    .w0     (we && !mreq),
     .a1     (char_address),
     .q1     (char_data)
 );
@@ -154,7 +154,10 @@ reg         intr;       // -> К процессору
 reg [ 2:0]  vect;       // Номер текущего прерывания
 
 // Учесть банки памяти
-wire [16:0] cpu_address = address + (address >= 16'hF000 ?  bank*4096 : 0);
+wire [26:0] A26  = address + (address >= 16'hF000 ?  bank*4096 : 0);
+
+// Все что выше 128K RAM, относится к SDRAM
+wire mreq = (A26 >= 26'h20000);
 
 // Роутер памяти и портов
 wire [ 7:0] data_i =
@@ -167,7 +170,8 @@ wire [ 7:0] data_i =
     address == 16'h2F ? cury        :
     address == 16'h30 ? intmask     :
     address == 16'h31 ? zxborder    :
-                        data_m1;
+    // Либо 128К, либо SDRAM
+        (mreq ? sdram_out : data_m1);
 
 always @(posedge clock_25)
 begin
@@ -292,31 +296,63 @@ sd UnitSPI
 );
 
 // -----------------------------------------------------------------------------
+// ПАМЯТЬ SDRAM
+// -----------------------------------------------------------------------------
+
+sdram SDRAMUnit
+(
+    // Физический интерфейс
+    .reset_n        (locked),
+    .clock          (clock_100),
+    .clk_cpu        (clock_25),
+    .ce             (ce),
+
+    // Физический интерфейс DRAM
+    .dram_clk       (DRAM_CLK),
+    .dram_ba        (DRAM_BA),
+    .dram_addr      (DRAM_ADDR),
+    .dram_dq        (DRAM_DQ),
+    .dram_cas       (DRAM_CAS_N),
+    .dram_ras       (DRAM_RAS_N),
+    .dram_we        (DRAM_WE_N),
+    .dram_ldqm      (DRAM_LDQM),
+    .dram_udqm      (DRAM_UDQM),
+
+    // Сигналы от процессора
+    .address        (A26),
+    .mreq           (mreq),
+    .read           (read),
+    .write          (we),
+    .in             (data_o),
+    .out            (sdram_out)
+);
+
+// -----------------------------------------------------------------------------
 // ЦЕНТРАЛЬНЫЙ ПРОЦЕССОР
 // -----------------------------------------------------------------------------
+
 wire [15:0] pc, ir;
 wire [15:0] address;
-wire [ 7:0] data_o, data_m1;
-wire        we, read;
+wire [ 7:0] data_o, data_m1, sdram_out;
+wire        ce, we, read;
 
 core COREAVR
 (
     .clock      (clock_25),
     .reset_n    (locked),
-    .ce         (1'b1),
+    .ce         (ce),
     // Программная память
-    .pc         (pc),          // Программный счетчик
-    .ir         (ir),          // Инструкция из памяти
+    .pc         (pc),           // Программный счетчик
+    .ir         (ir),           // Инструкция из памяти
     // Оперативная память
-    .address    (address),     // Указатель на память RAM (sram)
-    .data_i     (data_i),      // = memory[ address ]
-    .data_o     (data_o),      // Запись в память по address
-    .we         (we),          // Разрешение записи в память
+    .address    (address),      // Указатель на память RAM (sram)
+    .data_i     (data_i),       // = memory[ address ]
+    .data_o     (data_o),       // Запись в память по address
+    .read       (read),         // Запрос на чтение из памяти
+    .we         (we),           // Разрешение записи в память
     // Внешнее прерывание #0..7
     .intr       (intr),
-    .vect       (vect),
-    // Чтение из памяти
-    .read       (read)
+    .vect       (vect)
 );
 
 endmodule

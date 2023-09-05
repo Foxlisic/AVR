@@ -2,8 +2,7 @@ module sdram
 (
     // Физический интерфейс
     input               reset_n,
-    input               clk_in,         // 100 mhz
-    output              clk_out,        // --> 100 mhz
+    input               clock,          // 100 mhz
     output  reg         ce,             // Удержание работы CPU
 
     // Физический интерфейс DRAM
@@ -11,23 +10,23 @@ module sdram
     output reg  [ 1:0]  dram_ba,        // 4 банка
     output reg  [12:0]  dram_addr,      // Максимальный адрес 2^13=8192
     inout       [15:0]  dram_dq,        // Ввод-вывод
-    output reg          dram_cas,       // CAS
-    output reg          dram_ras,       // RAS
-    output reg          dram_we,        // WE
+    output              dram_cas,       // CAS
+    output              dram_ras,       // RAS
+    output              dram_we,        // WE
     output reg          dram_ldqm,      // Маска для младшего байта
     output reg          dram_udqm,      // Маска для старшего байта
 
     // Сигналы от процессора
     input               clk_cpu,        // Процессорный CLK
     input       [26:0]  address,        // Запрошенный адрес
-    input       [ 7:0]  in,             // Что писать (от процессора)
     input               mreq,           // =1 Активировать контроллер
     input               read,           // =1 Процессор запросил чтение
     input               write,          // =1 Процессор запросил запись
+    input       [ 7:0]  in,             // Что писать (от процессора)
     output reg   [7:0]  out             // Результат
 );
 
-assign clk_out  = ~clk_in;
+assign dram_clk = ~clock;
 assign dram_dq  =  dram_we ? 16'hZZZZ : {data, data};
 assign {dram_ras, dram_cas, dram_we} = command;
 
@@ -62,7 +61,7 @@ reg [26:0]  kaddress;
 reg [ 7:0]  data;
 // ---------------------------------------------------------------------
 
-always @(negedge clk_in)
+always @(negedge clock)
 // Сброс PLL
 if (reset_n == 1'b0) begin
 
@@ -120,7 +119,7 @@ else begin
 
         end
         // Чтение или запись
-        else if (!done && (read || write)) begin
+        else if (!done && mreq && (read || write)) begin
 
             ce          <= 0;
             t           <= read ? 1 : 2;
@@ -167,6 +166,6 @@ else begin
 end
 
 // Чтобы не использовать внутри основного такта
-always @(negedge clk_in) flop <= flopn;
+always @(negedge clock) flop <= flopn;
 
 endmodule
