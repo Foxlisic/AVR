@@ -2,6 +2,7 @@ module pll
 (
     input  clkin,
     input  rst,
+    output m12,
     output m25,
     output m50,
     output m100,
@@ -11,11 +12,11 @@ altera_pll #(
     .fractional_vco_multiplier("false"),
     .reference_clock_frequency("50.0 MHz"),
     .operation_mode    ("normal"),
-    .number_of_clocks  (3),
+    .number_of_clocks  (4),
     .output_clock_frequency0("25.0 MHz"),   .phase_shift0("0 ps"),  .duty_cycle0(50),
     .output_clock_frequency1("50.0 MHz"),   .phase_shift1("0 ps"),  .duty_cycle1(50),
     .output_clock_frequency2("100.0 MHz"),  .phase_shift2("0 ps"),  .duty_cycle2(50),
-    .output_clock_frequency3("0.0 MHz"),    .phase_shift3("0 ps"),  .duty_cycle3(50),
+    .output_clock_frequency3("12.5 MHz"),   .phase_shift3("0 ps"),  .duty_cycle3(50),
     .output_clock_frequency4("0.0 MHz"),    .phase_shift4("0 ps"),  .duty_cycle4(50),
     .output_clock_frequency5("0.0 MHz"),    .phase_shift5("0 ps"),  .duty_cycle5(50),
     .output_clock_frequency6("0.0 MHz"),    .phase_shift6("0 ps"),  .duty_cycle6(50),
@@ -36,7 +37,7 @@ altera_pll #(
 altera_pll_i
 (
     .rst      (rst),
-    .outclk   ({m100,m50,m25}),
+    .outclk   ({m12,m100,m50,m25}),
     .locked   (locked),
     .fbclk    (1'b0),
     .refclk   (clkin)

@@ -13,6 +13,7 @@ public:
     void cls(byte _attr = 0x07) {
 
         heapvm;
+        bank(0);
 
         outp(VMODE, VM_80x25);
 
@@ -39,10 +40,15 @@ public:
     void prn(char m) {
 
         heapvm;
+        bank(0);
 
-        int loc = 2*locx + locy*160;
-        vm[loc]   = m;
-        vm[loc+1] = attr;
+        if (m == 10) {
+            locx = 80;
+        } else {
+            int loc = 2*locx + locy*160;
+            vm[loc]   = m;
+            vm[loc+1] = attr;
+        }
 
         locx++;
         if (locx >= 80) {
@@ -82,6 +88,16 @@ public:
         if (x < 0) { prn('-'); x = -x; }
         do { int a = x % 10; x = x / 10; t[id++] = '0' + a; } while (x);
         while (--id >= 0) prn(t[id]);
+    }
+
+    void prnhex(int x) {
+
+        byte k;
+
+        k = (x >> 4) & 15;
+        prn(k < 10 ? '0' + k : '7' + k);
+        k = x & 15;
+        prn(k < 10 ? '0' + k : '7' + k);
     }
 };
 

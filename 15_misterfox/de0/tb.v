@@ -4,12 +4,14 @@ module tb;
 // ---------------------------------------------------------------------
 reg clock;
 reg clock_25;
+reg clock_50;
 reg reset_n;
 
 always #0.5 clock    = ~clock;
+always #1.0 clock_50 = ~clock_50;
 always #2.0 clock_25 = ~clock_25;
 // ---------------------------------------------------------------------
-initial begin reset_n = 0; clock = 1; clock_25 = 0; #3.5 reset_n = 1; #2000 $finish; end
+initial begin reset_n = 0; clock = 1; clock_25 = 0; clock_50 = 0; #3.5 reset_n = 1; #2000 $finish; end
 initial begin $dumpfile("tb.vcd"); $dumpvars(0, tb); end
 initial begin $readmemh("tb.hex", pgm); end
 // ---------------------------------------------------------------------
@@ -125,7 +127,8 @@ sdram SDRAM
 (
     // Физический интерфейс
     .reset_n        (reset_n),
-    .clock          (clock),
+    .clock          (clock_50),
+    .clk_hi         (clock),
     .dram_clk       (clk_out),
 
     // Сигналы от процессора
@@ -134,7 +137,7 @@ sdram SDRAM
     .address        (sdram_address),
     .in             (data_o),
     .out            (sdram_out),
-    .mreq           (mreq),
+    .mreq           (1'b1),
     .read           (read),
     .write          (we)
 );

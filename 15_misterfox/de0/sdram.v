@@ -2,7 +2,8 @@ module sdram
 (
     // Физический интерфейс
     input               reset_n,
-    input               clock,          // 100 mhz
+    input               clock,          // 50 mhz
+    input               clk_hi,         // 100 mhz
     output  reg         ce,             // Удержание работы CPU
 
     // Физический интерфейс DRAM
@@ -46,17 +47,15 @@ localparam
     cmd_nop         = 3'b111;
 
 localparam
-    init_time       = 20000;
+    init_time       = 10000;
 
-// ---------------------------------------------------------------------
-reg  [1:0]  flop  = 2'b00;
-wire [1:0]  flopn = {flop[0], clk_cpu};
 // ---------------------------------------------------------------------
 reg         init, done;
 reg  [14:0] ic;
 reg  [1:0]  t;
 reg  [2:0]  m;
 reg  [2:0]  command;
+reg [12:0]  refresh;
 reg [26:0]  kaddress;
 reg [ 7:0]  data;
 // ---------------------------------------------------------------------
@@ -79,6 +78,7 @@ if (reset_n == 1'b0) begin
     dram_udqm   <= 1;
     dram_ldqm   <= 1;
     command     <= cmd_nop;
+    refresh     <= 0;
 
 end
 // Инициализация памяти при запуске
@@ -86,10 +86,10 @@ else if (init) begin
 
     case (ic)
 
-        init_time + 4:  begin command <= cmd_precharge; end
-        init_time + 16: begin command <= cmd_refresh; end
-        init_time + 72: begin command <= cmd_loadmode; dram_addr[9:0] <= 10'b0_00_010_0_111; end
-        init_time + 84: begin init    <= 0; ic <= 0; end
+        init_time + 2:  begin command <= cmd_precharge; end
+        init_time + 8:  begin command <= cmd_refresh; end
+        init_time + 36: begin command <= cmd_loadmode; dram_addr[9:0] <= 10'b0_00_010_0_111; end
+        init_time + 42: begin init    <= 0; ic <= 0; end
         default:        begin command <= cmd_nop; end
 
     endcase
@@ -104,18 +104,21 @@ else begin
 
     case (t)
     // IDLE
-    0: if (flopn == 2'b10) begin
+    0: if (clk_cpu == 1'b0) begin
 
         m <= 0;
 
         // Обновление строки каждые 64 мс
-        // 100 mhz / 8192 = через 12207 тактов; обновлять 15 раз => 813 тактов за 64 мс
-        if (ic >= 812) begin
+        // 50 mhz / 8192 = через 12207 тактов; обновлять 15 раз => 406 тактов за 64 мс
+        if (ic >= 406) begin
 
-            t       <= 3;
-            ce      <= 0;
-            ic      <= 0;
-            command <= cmd_refresh;
+            t   <= 3;
+            ce  <= 0;
+            ic  <= 0;
+
+            command     <= cmd_activate;
+            dram_addr   <= refresh;
+            refresh     <= refresh + 1;
 
         end
         // Чтение или запись
@@ -126,8 +129,8 @@ else begin
             command     <= cmd_activate;
             dram_ba     <= address[25:24];
             dram_addr   <= address[23:11];
-            dram_udqm   <= write &  address[0];
-            dram_ldqm   <= write & ~address[0];
+            dram_ldqm   <= write &  address[0];
+            dram_udqm   <= write & ~address[0];
             kaddress    <= address;
             data        <= in;
 
@@ -136,15 +139,15 @@ else begin
         else begin ce <= 1'b1; done <= 1'b0; end
 
     end
-    // 9T READ
+    // 8T READ
     1: case (m)
 
         0, 1,
-        3, 4, 5:
+        3, 4:
            begin command <= cmd_nop; end
         2: begin command <= cmd_read;       dram_addr <= {1'b1, kaddress[10:1]}; end
-        6: begin command <= cmd_precharge;  out <= kaddress[0] ? dram_dq[15:8] : dram_dq[7:0]; end
-        7: begin command <= cmd_nop; t <= 0; done <= 1; end
+        5: begin command <= cmd_precharge;  out <= kaddress[0] ? dram_dq[15:8] : dram_dq[7:0]; end
+        6: begin command <= cmd_nop; t <= 0; done <= 1; end
 
     endcase
     // 7T WRITE
@@ -159,13 +162,17 @@ else begin
 
     endcase
     // REFRESH
-    3: begin t <= 0; command <= cmd_nop; end
+    3: case (m)
+
+        0, 1:
+            begin command <= cmd_nop; end
+        2:  begin command <= cmd_precharge; dram_addr[10] <= 1'b1; end
+        3:  begin command <= cmd_nop; t <= 0; end
+
+    endcase
 
     endcase
 
 end
-
-// Чтобы не использовать внутри основного такта
-always @(negedge clock) flop <= flopn;
 
 endmodule

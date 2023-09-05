@@ -87,11 +87,12 @@ assign HEX5 = 7'b1111111;
 // --------------------------------------------------------------
 
 wire locked;
-wire clock_25;
+wire clock_12, clock_25, clock_50, clock_100;
 
 pll PLL0
 (
     .clkin     (CLOCK_50),
+    .m12       (clock_12),
     .m25       (clock_25),
     .m50       (clock_50),
     .m100      (clock_100),
@@ -303,7 +304,8 @@ sdram SDRAMUnit
 (
     // Физический интерфейс
     .reset_n        (locked),
-    .clock          (clock_100),
+    .clock          (clock_50),
+    .clk_hi         (clock_100),
     .clk_cpu        (clock_25),
     .ce             (ce),
 
