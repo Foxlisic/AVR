@@ -38,10 +38,10 @@ reg  [ 2:0] vect = 3'h0;
 wire [15:0] pc, address;
 reg  [15:0] ir;
 reg  [ 7:0] data_i;
-wire [ 7:0] data_o;
-wire        we, read, ce;
+wire [ 7:0] data_o, sdram_out;
+wire        we, read, mreq, ce;
 wire        clk_out;
-wire [25:0] address_26 = address;
+wire [26:0] sdram_address = address;
 
 core COREAVR
 (
@@ -127,13 +127,16 @@ sdram SDRAM
     .reset_n        (reset_n),
     .clk_in         (clock),
     .clk_out        (clk_out),
-    
+
     // Сигналы от процессора
     .clk_cpu        (clock_25),
+    .ce             (ce),
+    .address        (sdram_address),
+    .in             (data_o),
+    .out            (sdram_out),
+    .mreq           (mreq),
     .read           (read),
-    .write          (we),
-    .address        (address_26),
-    .ce             (ce)
+    .write          (we)
 );
 
 endmodule
