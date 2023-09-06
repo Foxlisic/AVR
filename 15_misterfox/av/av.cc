@@ -32,7 +32,7 @@ AVR::AVR(int w, int h, int scale, int fps) {
     frame_length        = 1000 / (fps ? fps : 1);
     frame_prev_ticks    = SDL_GetTicks();
 
-    sram    = (uint8_t*)  malloc(1024*1024);
+    sram    = (uint8_t*)  malloc(64*1024*1024);
     program = (uint16_t*) malloc(64*1024*2);
 
     assign();
