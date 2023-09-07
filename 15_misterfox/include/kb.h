@@ -84,9 +84,10 @@ public:
         }
     }
 
-    // Взять символ из очереди
+    // Неблокирующий
     byte get() {
 
+        // Если st <> ed, то есть символ в очереди
         if (st != ed) {
 
             byte ch = queue[st];
@@ -95,5 +96,13 @@ public:
         }
 
         return 0;
+    }
+
+    // Блокирующий
+    byte getch() {
+
+        byte x = 0;
+        while (0 == (x = get()));
+        return x;
     }
 };

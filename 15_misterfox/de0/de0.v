@@ -155,7 +155,7 @@ reg         intr;       // -> К процессору
 reg [ 2:0]  vect;       // Номер текущего прерывания
 
 // Учесть банки памяти
-wire [26:0] A26  = address + (address >= 16'hF000 ?  bank*4096 : 0);
+wire [25:0] A26  = address + (address >= 16'hF000 ?  bank*4096 : 0);
 
 // Все что выше 128K RAM, относится к SDRAM
 wire mreq = (A26 >= 26'h20000);
