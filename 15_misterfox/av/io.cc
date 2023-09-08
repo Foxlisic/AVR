@@ -44,7 +44,7 @@ void AVR::put(uint16_t addr, uint8_t value) {
         case 0x2E: cur_x = value; break;        // Курсор X
         case 0x2F: cur_y = value; break;        // Курсор Y
         case 0x30: intr_mask = value; break;    // Маски прерываний
-        case 0x31: zxborder = value & 7; break; // Бордер экрана ZX
+        case 0x31: zxborder_update(value); break; // Бордер экрана ZX
     }
 
     // Запись в память
@@ -122,6 +122,30 @@ void AVR::update_vm_byte(int A) {
             }
 
             break;
+    }
+}
+
+// Обновление бордера
+void AVR::zxborder_update(int value) {
+
+    if (videomode == 2) {
+
+        zxborder = value & 7;
+        int cl = ZXCOLOR[zxborder];
+
+        // Левый и правый
+        for (int y = 0; y < 400; y++)
+        for (int x = 0; x < 64; x++) {
+            pset(x, y, cl);
+            pset(x+64+512, y, cl);
+        }
+
+        // Верхний и нижний
+        for (int y = 0; y < 8; y++)
+        for (int x = 0; x < 640; x++) {
+            pset(x, y, cl);
+            pset(x, y+384+8, cl);
+        }
     }
 }
 

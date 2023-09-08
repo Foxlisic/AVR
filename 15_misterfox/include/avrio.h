@@ -28,6 +28,7 @@ enum PortsID {
     CURX    = 0x0E, // RW Курсор по X
     CURY    = 0x0F, // RW Курсор по Y
     MASKS   = 0x10, // RW Маски прерывания
+    ZXBORD  = 0x11, // RW ZX Border
 };
 
 // Список видеорежимов

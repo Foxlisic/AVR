@@ -1,4 +1,25 @@
+#include <math.h>
 #include "av.h"
+
+int au_cursor;
+
+// Объявление данных
+SDL_AudioSpec sdl_audio = {44100, AUDIO_U8, 2, 0, 2048};
+
+// Обработчик
+void audio_callback(void *data, unsigned char *stream, int len)
+{
+    for (int i = 0; i < len; i += 2) {
+
+        float v1 = 128;
+        float v2 = 128;
+
+        stream[i]   = v1;
+        stream[i+1] = v2;
+
+        au_cursor += 1;
+    }
+}
 
 // -----------------------------------------------------------------------------
 // ОБЩИЕ МЕТОДЫ
@@ -27,6 +48,10 @@ AVR::AVR(int w, int h, int scale, int fps) {
     sdl_pixel_format    = SDL_AllocFormat(format);
     sdl_screen_texture  = SDL_CreateTexture(sdl_renderer, format, SDL_TEXTUREACCESS_STREAMING, _width, _height);
     SDL_SetTextureBlendMode(sdl_screen_texture, SDL_BLENDMODE_NONE);
+
+    sdl_audio.callback = audio_callback;
+    SDL_OpenAudio(&sdl_audio, 0);
+    SDL_PauseAudio(0);
 
     screen_buffer       = (Uint32*)malloc(width * height * sizeof(Uint32));
     frame_length        = 1000 / (fps ? fps : 1);

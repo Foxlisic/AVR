@@ -37,6 +37,8 @@ void hello_zx() {
 
     heapzx;
     for (int i = 0; i < 6912; i++) vm[i] = pgm_read_byte(&WALLPAPER[i]);
+
+    outp(ZXBORD, 1);
 }
 
 int main() {

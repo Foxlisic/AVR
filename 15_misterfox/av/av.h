@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "ay.cc"
 #include "ansi.h"
 
 static const char* ds_brcs[4][8] = {
@@ -94,6 +95,8 @@ protected:
     Uint32  frame_length;
     Uint32  frame_prev_ticks;
 
+    AYChip AY;
+
 public:
 
     // Открытые поля
@@ -149,6 +152,7 @@ public:
     void        switch_vm(uint8_t);
     void        update_vm_byte(int A);
     void        zxbyte_screen(int A);
+    void        zxborder_update(int value);
 
     // Процессор
     void        assign();
