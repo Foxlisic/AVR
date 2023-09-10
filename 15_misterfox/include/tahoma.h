@@ -2,7 +2,7 @@
 #define __TAHOMA_FONT11
 
 extern const byte tahoma_bitmap[11*112] PROGMEM;
-extern const word tahoma_offset[162] PROGMEM;
+extern const byte tahoma_size[162] PROGMEM;
 extern const word tahoma_offset[162] PROGMEM;
 
 // 69 byte x 11

@@ -5,6 +5,7 @@
 #include <avr/pgmspace.h>
 
 #define LPM(x) pgm_read_byte(&x)
+#define LPW(t) pgm_read_word(&t)
 
 // Ссылка на пустой адрес
 #define NULL    ((void*)0)
