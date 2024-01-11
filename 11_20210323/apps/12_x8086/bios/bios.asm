@@ -3,11 +3,8 @@
 
             mov     ax, $b800
             mov     es, ax
-            mov     ax, $0801
+            mov     ax, $1700
 m1:         xor     di, di
             mov     cx, 2000
-@@:         stosw
-            dec     al
-            loop    @b
-            jmp     m1
+            rep     stosw
             hlt
