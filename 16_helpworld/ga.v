@@ -43,25 +43,17 @@ reg  [23:0] timer;
 reg  [ 7:0] char, tchar, attr, tattr;
 // ---------------------------------------------------------------------
 wire [10:0] id = X[9:3] + (Y[8:4] * 80);
-wire        maskbit = (char[ 3'h7 ^ X[2:0] ]) | (flash && (id == cursor+1) && Y[3:0] >= 14);
+wire        maskbit = char[~X[2:0]] || (flash && (id == cursor+1) && Y[3:0] >= 14);
 wire [ 3:0] color = maskbit ? (attr[7] & flash ? attr[6:4] : attr[3:0]) : attr[6:4];
 wire [15:0] dst =
-    color == 4'h0 ? 12'h111 : // 0 Черный (почти)
-    color == 4'h1 ? 12'h008 : // 1 Синий (темный)
-    color == 4'h2 ? 12'h080 : // 2 Зеленый (темный)
-    color == 4'h3 ? 12'h088 : // 3 Бирюзовый (темный)
-    color == 4'h4 ? 12'h800 : // 4 Красный (темный)
-    color == 4'h5 ? 12'h808 : // 5 Фиолетовый (темный)
-    color == 4'h6 ? 12'h880 : // 6 Коричневый
-    color == 4'h7 ? 12'hccc : // 7 Серый -- тут что-то не то
-    color == 4'h8 ? 12'h888 : // 8 Темно-серый
-    color == 4'h9 ? 12'h00f : // 9 Синий (темный)
-    color == 4'hA ? 12'h0f0 : // 10 Зеленый
-    color == 4'hB ? 12'h0ff : // 11 Бирюзовый
-    color == 4'hC ? 12'hf00 : // 12 Красный
-    color == 4'hD ? 12'hf0f : // 13 Фиолетовый
-    color == 4'hE ? 12'hff0 : // 14 Желтый
-                    12'hfff;  // 15 Белый
+    color == 4'h0 ? 12'h111 : color == 4'h8 ? 12'h888 :
+    color == 4'h1 ? 12'h008 : color == 4'h9 ? 12'h00f :
+    color == 4'h2 ? 12'h080 : color == 4'hA ? 12'h0f0 :
+    color == 4'h3 ? 12'h088 : color == 4'hB ? 12'h0ff :
+    color == 4'h4 ? 12'h800 : color == 4'hC ? 12'hf00 :
+    color == 4'h5 ? 12'h808 : color == 4'hD ? 12'hf0f :
+    color == 4'h6 ? 12'h880 : color == 4'hE ? 12'hff0 :
+    color == 4'h7 ? 12'hccc :                 12'hfff;
 
 // Вывод видеосигнала
 always @(posedge clock) begin
