@@ -43,11 +43,7 @@ reg  [23:0] timer;
 reg  [ 7:0] char, attr, temp;
 // ---------------------------------------------------------------------
 wire [10:0] id = X[9:3] + (Y[8:4] * 80);
-<<<<<<< HEAD
-wire        maskbit = char[~X[2:0]] || (flash && (id == cursor+1) && Y[3:0] >= 14);
-=======
 wire        maskbit = (char[~X[2:0]]) | (flash && (id == cursor+1) && Y[3:0] >= 14);
->>>>>>> fbc7261 (Utitiles)
 wire [ 3:0] color = maskbit ? (attr[7] & flash ? attr[6:4] : attr[3:0]) : attr[6:4];
 wire [15:0] dst =
     color == 4'h0 ? 12'h111 : color == 4'h8 ? 12'h888 :

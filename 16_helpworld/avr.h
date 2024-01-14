@@ -359,11 +359,7 @@ AVR::AVR(int argc, char** argv) {
     // Очистка экрана
     for (int i = 0; i < 2048; i++) {
         memory[0xF000 + 2*i] = 0xFA;
-<<<<<<< HEAD
         memory[0xF001 + 2*i] = 0x07;
-=======
-        memory[0xF001 + 2*i] = 0x17;
->>>>>>> fbc7261 (Utitiles)
     }
 
     // Загрузка кода в память

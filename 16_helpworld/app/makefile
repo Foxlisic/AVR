@@ -13,7 +13,7 @@ all:
 	avr-objdump -S main.elf > main.lst
 	avr-size -C --mcu=$(DEVICE) main.elf > mem.map
 	rm main.elf
-	php ../../utils/bin2mif.php main.bin 16:16 ../de0/prog.mif
+	php ../../utils/b2m.php main.bin 16:16 ../de0/prog.mif
 	$(AVR) main.bin
 
 clean:
