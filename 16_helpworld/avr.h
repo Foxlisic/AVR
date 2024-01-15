@@ -411,7 +411,6 @@ void AVR::fps() {
             if (kb->done && kb->data) {
 
                 kb_data = kb->data;
-
                 avr->intr = !avr->intr;
                 avr->vect = 0;
             }
@@ -425,7 +424,13 @@ void AVR::fps() {
             // -----------------------------------------------------------------
             avr->ir     = progmem[ avr->pc ];
             if (avr->we) memory[ avr->address ] = avr->data_o;
-            avr->data_i = memory[ avr->address ];
+
+            // Роутер памяти
+            switch (avr->address) {
+
+                case 0x20: avr->data_i = kb_data; break;
+                default:   avr->data_i = memory[ avr->address ];
+            }
 
             // Исполнение одного такта
             // -----------------------------------------------------------------

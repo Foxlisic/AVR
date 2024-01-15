@@ -1,5 +1,6 @@
 #include <avrio.h>
 
+int x = 0;
 
 void cls(byte color) {
 
@@ -22,12 +23,16 @@ void test(const char* s) {
 }
 
 ISR(INT0_vect) {
-    test(" Nehillovuiy! ");
+
+    heapvm;
+
+    vm[x] = inp(0);
+    x += 2;
 }
 
 int main() {
 
-    cls(0);
+    cls(0x07);
     test(" Help, World! ");
 
     sei();
