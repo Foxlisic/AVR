@@ -1,15 +1,7 @@
 #include <avrio.h>
+#include <base.cc>
 
 int x = 0;
-
-void cls(byte color) {
-
-    heapvm;
-    for (int i = 0; i < 4000; i += 2) {
-        vm[i  ] = 0x00;
-        vm[i+1] = color;
-    }
-}
 
 void test(const char* s) {
 
