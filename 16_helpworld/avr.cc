@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include "obj_dir/Vga.h"
+#include "obj_dir/Vkb.h"
 #include "obj_dir/Vavr.h"
 #include "avr.h"
 

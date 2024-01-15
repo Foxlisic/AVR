@@ -100,7 +100,6 @@ wire [ 7:0] K   = {opcode[11:8], opcode[3:0]};
 reg         skip_instr  = 1'b0;
 wire [15:0] pcnext      = pc + 1'h1;
 wire [15:0] pcnext2     = pc + 2'h2;
-wire        en_int      = (tstate == 0 && sreg[7]);
 wire        is_call     = {opcode[14], opcode[3:1]} == 4'b0111;
 // ---------------------------------------------------------------------
 // Арифметико-логическое устройство
@@ -162,8 +161,8 @@ else begin
                 data_o  <= pc[15:8];
                 we      <= 1'b1;
                 sp_mth  <= SPDEC;
-                pc      <= {intr_vect, 1'b0}; // ISR(INTx_vect)
-                intr_trigger <= 0;            // Переход к обычному исполнению
+                pc      <= {intr_vect, 1'b0};  // ISR(INTx_vect)
+                intr_trigger <= 0;             // Переход к обычному исполнению
                 // Сброс флага I->0 (sreg)
                 alu     <= 11;
                 op2     <= {1'b0, sreg[6:0]};
@@ -173,10 +172,10 @@ else begin
     end
     // Вызов прерывания IRQ#x срабатывает на переключении intr
     // -----------------------------------------------------------------
-    else if (en_int && tstate == 0 && intr ^ intr_prev) begin
-        intr_vect    <= vect; // Вектор 0..7
-        intr_prev    <= intr; // Сохранить предыдущее состояние
-        intr_trigger <= 1'b1; // Вызов прерывания
+    else if (sreg[7] && tstate == 0 && intr ^ intr_prev) begin
+        intr_vect    <= vect + 1;   // Вектор 0..7
+        intr_prev    <= intr;       // Сохранить предыдущее состояние
+        intr_trigger <= 1'b1;       // Вызов прерывания
     end
     // Исполнение опкодов
     // -----------------------------------------------------------------
@@ -875,7 +874,7 @@ begin
         /* AND   */ 8:  begin alu_res = op1 & op2;  alu_sreg = set_logic_flag; end
         /* EOR   */ 9:  begin alu_res = op1 ^ op2;  alu_sreg = set_logic_flag; end
         /* OR    */ 10: begin alu_res = op1 | op2;  alu_sreg = set_logic_flag; end
-        /* SREG  */ 11: begin alu_res = op2;        end
+        /* SREG  */ 11: begin                       alu_sreg = op2; end
         /* COM   */ 12: begin alu_res = com;        alu_sreg = set_com_flag; end
         /* NEG   */ 13: begin alu_res = neg;        alu_sreg = set_neg_flag; end
         /* SWAP  */ 14: begin alu_res = swap;       end
