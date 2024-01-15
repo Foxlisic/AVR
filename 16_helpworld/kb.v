@@ -64,7 +64,7 @@ always @(posedge clock) begin
                         case ({extended, kin[8:1]})
 
                             // Левый и правый SHIFT равнозначны
-                            /* SH */ 8'h12, 8'h59: shift <= ~released;
+                            /* SH */ 8'h12, 8'h59: begin shift <= ~released; kdone <= 1'b0; end
 
                             // Цифробуквенная клавиатура
                             /* Aa */ 8'h1C: data <= shift ? 8'h41 : 8'h61;
