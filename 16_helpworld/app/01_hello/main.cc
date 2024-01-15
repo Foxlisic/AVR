@@ -25,7 +25,6 @@ void test(const char* s) {
 ISR(INT0_vect) {
 
     heapvm;
-
     vm[x] = inp(0);
     x += 2;
 }
