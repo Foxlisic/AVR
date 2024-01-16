@@ -1,33 +1,14 @@
 #include <avrio.h>
-#include <base.cc>
-
-int x = 0;
-
-void test(const char* s) {
-
-    heapvm;
-    int i = 0;
-    while (s[i]) {
-        vm[2*(33+11*80)+2*i] = s[i];
-        vm[2*(33+11*80)+2*i+1] = 0x70;
-        i++;
-    }
-}
+#include <qb.cc>
 
 ISR(INT0_vect) {
-
-    heapvm;
-    vm[x] = inp(0);
-    x += 2;
+    prn(inp(0));
 }
 
 int main() {
 
     cls(0x07);
-    test(" Help, World! ");
-
-    locate(2,1);
-
+    print("Декларе ундертале\nЛИЦЕНЗИЯ NO WARRANTY ИСПОЛЬЗОВАНИЕ\nСтив крутится вокруг своей оси, почитывая Котячью Свободную Лицензию.");
     sei();
     for(;;);
 }
