@@ -285,7 +285,7 @@ protected:
 
     int     vga_x, vga_y, vga_hs, vga_vs;
     int     ps_clock = 1, ps_data = 1, kbd_phase = 0, kbd_ticker = 0;
-    Uint8   kbd[256], kbd_top = 0, kb_hit_cnt = 0, kb_latch = 0, kb_data = 0;
+    Uint8   kbd[256], kbd_top = 0, kb_hit_cnt = 0, kb_latch = 0, kb_data = 0, cursor_x, cursor_y;
 
     Vga*    vga;
     Vavr*   avr;
@@ -326,6 +326,8 @@ AVR::AVR(int argc, char** argv) {
     vga_vs      = 0;
     vga_x       = 0;
     vga_y       = 2;
+    cursor_x    = 0;
+    cursor_y    = 0;
 
     kbd_top     = 0;
 
@@ -420,15 +422,28 @@ void AVR::fps() {
             vga->D = memory[ 0xF000 + (vga->A & 0xFFF) ];
             vga->F = fontmem[ vga->A & 0xFFF ];
 
-            // Чтение и запись в память
+            // Чтение и запись в память и порты
             // -----------------------------------------------------------------
-            avr->ir     = progmem[ avr->pc ];
-            if (avr->we) memory[ avr->address ] = avr->data_o;
+            avr->ir = progmem[ avr->pc ];
+
+            if (avr->we) {
+
+                memory[avr->address] = avr->data_o;
+
+                switch (avr->address) {
+
+                    // Положение курсорума
+                    case 0x21: cursor_x = avr->data_o; vga->cursor = cursor_x + cursor_y*80;  break;
+                    case 0x22: cursor_y = avr->data_o; vga->cursor = cursor_x + cursor_y*80; break;
+                }
+            }
 
             // Роутер памяти
             switch (avr->address) {
 
-                case 0x20: avr->data_i = kb_data; break;
+                case 0x20: avr->data_i = kb_data;  break;
+                case 0x21: avr->data_i = cursor_x; break;
+                case 0x22: avr->data_i = cursor_y; break;
                 default:   avr->data_i = memory[ avr->address ];
             }
 

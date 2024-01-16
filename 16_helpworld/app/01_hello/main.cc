@@ -26,6 +26,8 @@ int main() {
     cls(0x07);
     test(" Help, World! ");
 
+    locate(2,1);
+
     sei();
     for(;;);
 }

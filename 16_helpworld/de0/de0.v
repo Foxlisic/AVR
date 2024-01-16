@@ -90,7 +90,7 @@ wire        we, read, kb_done;
 // Регистры
 reg         intr;
 reg  [ 2:0] vect;
-reg  [ 7:0] kb;
+reg  [ 7:0] kb, cursor_x, cursor_y;
 
 // -----------------------------------------------------------------------------
 // Генерация частот
@@ -130,6 +130,8 @@ avr CORE
 // Адаптер
 // -----------------------------------------------------------------------------
 
+wire [11:0] cursor = cursor_x + cursor_y*80;
+
 // Видеоадаптер
 ga VIDEO
 (
@@ -143,7 +145,8 @@ ga VIDEO
     // Связь с памятью
     .A      (vga_a),
     .D      (vga_d),
-    .F      (vga_f)
+    .F      (vga_f),
+    .cursor (cursor),
 );
 
 // -----------------------------------------------------------------------------
@@ -165,10 +168,24 @@ kb KBD
 
 // Роутер портов в памяти
 wire [7:0] data_i =
-    16'h0020 == address ? kb : mem_in;
+    16'h0020 == address ? kb :
+    16'h0021 == address ? cursor_x :
+    16'h0022 == address ? cursor_y :
+    mem_in;
 
-// Получение скан-кода с клавиатуры
-always @(posedge clock_25) if (kb_done) begin kb <= kb_data; vect <= 1'b0; intr <= ~intr; end
+// Запись в порты или прием данных от устройств
+always @(posedge clock_25) begin
+
+    // Получение скан-кода с клавиатуры
+    if (kb_done) begin kb <= kb_data; vect <= 1'b0; intr <= ~intr; end
+
+    // Запись в порты
+    if (we) case (address)
+    16'h0021: cursor_x <= data_o;
+    16'h0022: cursor_y <= data_o;
+    endcase
+
+end
 
 // Память
 // -----------------------------------------------------------------------------

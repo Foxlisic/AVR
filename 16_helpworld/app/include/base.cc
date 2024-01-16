@@ -7,3 +7,10 @@ void cls(byte color) {
         vm[i+1] = color;
     }
 }
+
+// Установка курсорума
+void locate(byte x, byte y) {
+
+    out(1, x);
+    out(2, y);
+}
