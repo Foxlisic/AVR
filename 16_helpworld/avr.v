@@ -7,17 +7,18 @@ module avr
     input               clock,
     input               reset_n,
     // Программная память
-    output reg  [15:0]  pc,         // Программный счетчик
+    output  reg [15:0]  pc,         // Программный счетчик
     input       [15:0]  ir,         // Инструкция из памяти
     // Оперативная память
-    output reg  [15:0]  address,    // Указатель на память RAM (sram)
+    output  reg [15:0]  address,    // Указатель на память RAM (sram)
     input       [ 7:0]  data_i,     // = memory[ address ]
-    output reg  [ 7:0]  data_o,     // Запись в память по address
-    output reg          we,         // =1 Запись в память
-    output reg          read,       // =1 Запрос чтения из памяти
+    output  reg [ 7:0]  data_o,     // Запись в память по address
+    output  reg          we,        // =1 Запись в память
+    output  reg          read,      // =1 Запрос чтения из памяти
     // Внешнее прерывание #0..7
     input               intr,
-    input       [ 2:0]  vect
+    input       [ 2:0]  vect,
+    output  reg         ack         // Строб RETI
 );
 initial begin
     address = 1'b0;
@@ -130,6 +131,7 @@ else begin
     reg_ww <= 1'b0; // Ничего не делать с X,Y,Z
     reg_ws <= 1'b0; // Источник регистр wb2
     reg_wm <= 1'b0; // Источник регистр resw
+    ack    <= 1'b0; // Строб обработанного прерывания
     if (tstate == 0) latch <= ir;
     // Код пропуска инструкции (JMP, CALL, LDS, STS)
     if (skip_instr) begin
@@ -305,6 +307,7 @@ else begin
                 alu      <= 11;
                 op2      <= {sreg[7] | opcode[4], sreg[6:0]};
                 sreg_w   <= 1;
+                ack      <= opcode[4];
             end
         endcase
         // [2T] LD Rd, (X|Y|Z)+

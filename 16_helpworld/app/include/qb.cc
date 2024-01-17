@@ -6,6 +6,34 @@
 #define CURSOR_Y 2
 
 byte cursor_x, cursor_y, cursor_attr;
+byte kb_data[8];
+volatile byte kb_top = 0;
+
+// Прием следуюшего символа из IRQ
+void kb_irq_handler() {
+
+    if (kb_top >= 7) return;
+    kb_data[kb_top++] = inp(0);
+}
+
+// Прием данных с клавиатуры; если указан wait=1, то ждать нажатия клавиши
+byte inkey(byte wait = 0) {
+
+    byte ch = 0;
+
+    do {
+
+        if (kb_top) {
+            ch = kb_data[0];
+            kb_top--;
+            for (int i = 0; i < kb_top; i++)
+                kb_data[i] = kb_data[i+1];
+        }
+
+    } while (wait && ch == 0);
+
+    return ch;
+}
 
 // Установка курсорума
 void locate(byte x, byte y) {
@@ -15,6 +43,9 @@ void locate(byte x, byte y) {
     cursor_x = x;
     cursor_y = y;
 }
+
+// Скрыть курсор
+void hide() { locate(0, 25); }
 
 // Цвет
 void attr(byte x) { cursor_attr = x; }
@@ -29,6 +60,7 @@ void cls(byte color) {
     }
     locate(0, 0);
     cursor_attr = color;
+    kb_top = 0;
 }
 
 // Вывод символа на экране
@@ -64,24 +96,23 @@ void prn(char ch) {
 // Отпечатать строку UTF8 на экране
 void print(const char* s, byte pgm = 0) {
 
-    byte ch, ct;
+    byte ch, nx, ct;
     int  i = 0, n = 0;
-    while ((ch = (pgm ? pgm_read_byte(&s[i]) : s[i]))) {
+    while ((ch = (pgm ? pgm_read_byte(&s[i++]) : s[i++]))) {
 
-        i++;
-        ct = 0;
+        ct = (ch == 0x1B);
 
         // Считывание дополнительного байта UTF8 или CTL
         if (ch == 0xD0 || ch == 0xD1 || ch == 0x1B) {
-            ch = pgm ? pgm_read_byte(&s[i]) : s[i];
-            ct = 1;
-            i++;
-        }
 
-        // Разбор дополнительного байта
-        if      (ch == 0xD0) ch = (ch == 0x81 ? 0xF0 : ch - 0x10);
-        else if (ch == 0xD1) ch = (ch == 0x91 ? 0xF1 : ch + (ch < 0xB0 ? 0x60 : 0x10));
-        else if (ct) { cursor_attr = ch; continue; }
+            // Прочитать следующий символ
+            nx = (pgm ? pgm_read_byte(&s[i++]) : s[i++]);
+
+            // Разбор дополнительного байта
+            if      (ch == 0xD0) { ch = (nx == 0x81 ? 0xF0 : nx - 0x10); }
+            else if (ch == 0xD1) { ch = (nx == 0x91 ? 0xF1 : nx + (nx < 0xB0 ? 0x60 : 0x10)); }
+            else if (ct) { cursor_attr = nx; continue; }
+        }
 
         prn(ch);
         n++;

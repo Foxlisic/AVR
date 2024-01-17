@@ -13,6 +13,7 @@
 // Пример как пользоваться: LPM(my_best_array[i])
 #define LPM(t)  pgm_read_byte(&t)
 #define LPW(t)  pgm_read_word(&t)
+#define stop    for(;;)
 
 // Базовые типы данных
 typedef unsigned char byte;

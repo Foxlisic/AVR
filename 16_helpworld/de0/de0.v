@@ -111,7 +111,7 @@ pll PLL
 avr CORE
 (
     .clock      (clock_25),
-    .reset_n    (locked),
+    .reset_n    (locked & RESET_N),
     // Память программ
     .pc         (pc),
     .ir         (ir),
