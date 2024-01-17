@@ -62,18 +62,27 @@ void prn(char ch) {
 }
 
 // Отпечатать строку UTF8 на экране
-void print(const char* s) {
+void print(const char* s, byte pgm = 0) {
 
-    int i = 0, n = 0;
-    while (s[i]) {
-        byte ch = s[i++];
-        if (ch == 0xD0) { // Главный набор
-            ch = s[i++];
-            ch = (ch == 0x81 ? 0xF0 : ch - 0x10);
-        } else if (ch == 0xD1) { // Вторичный набор
-            ch = s[i++];
-            ch = (ch == 0x91 ? 0xF1 : ch + (ch < 0xB0 ? 0x60 : 0x10));
+    byte ch, ct;
+    int  i = 0, n = 0;
+    while ((ch = (pgm ? pgm_read_byte(&s[i]) : s[i]))) {
+
+        i++;
+        ct = 0;
+
+        // Считывание дополнительного байта UTF8 или CTL
+        if (ch == 0xD0 || ch == 0xD1 || ch == 0x1B) {
+            ch = pgm ? pgm_read_byte(&s[i]) : s[i];
+            ct = 1;
+            i++;
         }
+
+        // Разбор дополнительного байта
+        if      (ch == 0xD0) ch = (ch == 0x81 ? 0xF0 : ch - 0x10);
+        else if (ch == 0xD1) ch = (ch == 0x91 ? 0xF1 : ch + (ch < 0xB0 ? 0x60 : 0x10));
+        else if (ct) { cursor_attr = ch; continue; }
+
         prn(ch);
         n++;
     }
