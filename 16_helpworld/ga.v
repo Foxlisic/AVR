@@ -13,7 +13,8 @@ module ga
     input        [ 7:0] F,      // Шрифт
 
     // Внешний интерфейс
-    input        [10:0] cursor  // Положение курсора от 0 до 2047
+    input        [10:0] cursor, // Положение курсора от 0 до 2047
+    output  reg  [ 7:0] vsync   // Количество переключений VSYNC
 );
 
 // ---------------------------------------------------------------------
@@ -73,6 +74,9 @@ always @(posedge clock) begin
 
     // Таймер для мигания курсора
     if (timer == 12500000) begin flash <= ~flash; timer <= 0; end else timer <= timer + 1;
+
+    // Как только завершается рисование кадра, то инкрементируется vsync
+    if (x == 0 && y == vt_visible + vt_back) vsync <= vsync + 1;
 
     // Вывод окна видеоадаптера
     if (x >= hz_back && x < hz_visible + hz_back && y >= vt_back && y < vt_visible + vt_back)

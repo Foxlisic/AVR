@@ -85,7 +85,7 @@ wire [15:0] pc, ir;
 wire [15:0] address;
 wire [11:0] vga_a;
 wire [ 7:0] mem_in, data_o, vga_d, vga_f, kb_data;
-wire        we, read, kb_done;
+wire        we, read, ack, kb_done;
 
 // Регистры
 reg         intr;
@@ -123,7 +123,8 @@ avr CORE
     .read       (read),
     // Внешнее прерывание #0..7
     .intr       (intr),
-    .vect       (vect)
+    .vect       (vect),
+    .ack        (ack)
 );
 
 // -----------------------------------------------------------------------------
