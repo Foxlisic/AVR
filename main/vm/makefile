@@ -1,8 +1,8 @@
 all: app
-	./avr
+	./avr > avr.log
 
 app: avr_cpu.o avr_assign.o avr_disasm.o
-	g++ -Ofast -o avr avr.cc -lSDL2
+	g++ -Ofast avr_cpu.o avr_assign.o avr_disasm.o avr.cc -o avr -lSDL2 -Wno-unused-result
 
 # Сборка o-файлов
 avr_cpu.o: avr_cpu.cc

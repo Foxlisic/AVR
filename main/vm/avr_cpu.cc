@@ -1,16 +1,22 @@
 #include "avr.h"
+#include "avr_assign.h"
+
+void AVR::reset()
+{
+    pc = 0;
+}
 
 // Чтение из памяти
-uint8_t AVR::get(uint16_t addr) {
-
+uint8_t AVR::get(uint16_t addr)
+{
     uint8_t dv = sram[addr];
 
     return dv;
 }
 
 // Сохранение в память
-void AVR::put(uint16_t addr, uint8_t value) {
-
+void AVR::put(uint16_t addr, uint8_t value)
+{
     sram[addr] = value;
 
     // Запись во флаги
@@ -18,8 +24,8 @@ void AVR::put(uint16_t addr, uint8_t value) {
 }
 
 // Байт во флаги
-void AVR::byte_to_flag(uint8_t f) {
-
+void AVR::byte_to_flag(uint8_t f)
+{
     flag.c = (f >> 0) & 1;
     flag.z = (f >> 1) & 1;
     flag.n = (f >> 2) & 1;
@@ -31,8 +37,8 @@ void AVR::byte_to_flag(uint8_t f) {
 };
 
 // Флаги в байты
-uint8_t AVR::flag_to_byte() {
-
+uint8_t AVR::flag_to_byte()
+{
     uint8_t f =
         (flag.i<<7) |
         (flag.t<<6) |
@@ -48,13 +54,14 @@ uint8_t AVR::flag_to_byte() {
 }
 
 // Развернуть итоговые биты
-uint16_t AVR::neg(uint16_t n) {
+uint16_t AVR::neg(uint16_t n)
+{
     return n ^ 0xffff;
 }
 
 // Установка флагов
-void AVR::set_logic_flags(uint8_t r) {
-
+void AVR::set_logic_flags(uint8_t r)
+{
     flag.v = 0;
     flag.n = (r & 0x80) ? 1 : 0;
     flag.s = flag.n;
@@ -63,8 +70,8 @@ void AVR::set_logic_flags(uint8_t r) {
 }
 
 // Флаги после вычитания с переносом
-void AVR::set_subcarry_flag(int d, int r, int R, int carry) {
-
+void AVR::set_subcarry_flag(int d, int r, int R, int carry)
+{
     flag.c = d < r + carry ? 1 : 0;
     flag.z = ((R & 0xFF) == 0 && flag.z) ? 1 : 0;
     flag.n = (R & 0x80) > 1 ? 1 : 0;
@@ -75,8 +82,8 @@ void AVR::set_subcarry_flag(int d, int r, int R, int carry) {
 }
 
 // Флаги после вычитания
-void AVR::set_subtract_flag(int d, int r, int R) {
-
+void AVR::set_subtract_flag(int d, int r, int R)
+{
     flag.c = d < r ? 1 : 0;
     flag.z = (R & 0xFF) == 0 ? 1 : 0;
     flag.n = (R & 0x80) > 1 ? 1 : 0;
@@ -87,8 +94,8 @@ void AVR::set_subtract_flag(int d, int r, int R) {
 }
 
 // Флаги после сложение с переносом
-void AVR::set_add_flag(int d, int r, int R, int carry) {
-
+void AVR::set_add_flag(int d, int r, int R, int carry)
+{
     flag.c = d + r + carry >= 0x100;
     flag.h = (((d & r) | (r & neg(R)) | (neg(R) & d)) & 0x08) > 0 ? 1 : 0;
     flag.z = R == 0 ? 1 : 0;
@@ -99,8 +106,8 @@ void AVR::set_add_flag(int d, int r, int R, int carry) {
 }
 
 // Флаги после логической операции сдвига
-void AVR::set_lsr_flag(int d, int r) {
-
+void AVR::set_lsr_flag(int d, int r)
+{
     flag.c = d & 1;
     flag.n = (r & 0x80) > 0 ? 1 : 0;
     flag.z = (r == 0x00) ? 1 : 0;
@@ -110,8 +117,8 @@ void AVR::set_lsr_flag(int d, int r) {
 }
 
 // Флаги после сложения 16 бит
-void AVR::set_adiw_flag(int a, int r) {
-
+void AVR::set_adiw_flag(int a, int r)
+{
     flag.v = ((neg(a) & r) & 0x8000) > 0 ? 1 : 0;
     flag.c = ((neg(r) & a) & 0x8000) > 0 ? 1 : 0;
     flag.n = (r & 0x8000) > 0 ? 1 : 0;
@@ -121,8 +128,8 @@ void AVR::set_adiw_flag(int a, int r) {
 }
 
 // Флаги после вычитания 16 бит
-void AVR::set_sbiw_flag(int a, int r) {
-
+void AVR::set_sbiw_flag(int a, int r)
+{
     flag.v = ((neg(a) & r) & 0x8000) > 0 ? 1 : 0;
     flag.c = ((neg(a) & r) & 0x8000) > 0 ? 1 : 0;
     flag.n = (r & 0x8000) > 0 ? 1 : 0;
@@ -132,9 +139,9 @@ void AVR::set_sbiw_flag(int a, int r) {
 }
 
 // В зависимости от инструкции CALL/JMP/LDS/STS
-int AVR::skip_instr() {
-
-    switch (map[ fetch() ]) {
+int AVR::skip_instr()
+{
+    switch (assign_map[ fetch() ]) {
 
         case CALL:
         case JMP:
@@ -149,8 +156,8 @@ int AVR::skip_instr() {
 }
 
 // Вызов прерывания
-void AVR::interruptcall() {
-
+void AVR::interruptcall()
+{
     flag.i = 0;
     flag_to_byte();
     push16(pc);
@@ -165,14 +172,15 @@ uint8_t AVR::readpgm(uint16_t a)
 }
 
 // Исполнение шага процессора
-int AVR::step() {
-
+int AVR::step()
+{
     int R, r, d, a, b, A, v, Z;
+    int org = pc;
     unsigned short p;
 
     cycles  = 1;
     opcode  = fetch();
-    command = map[opcode];
+    command = assign_map[opcode];
 
     // Исполнение опкода
     switch (command) {
@@ -185,8 +193,8 @@ int AVR::step() {
         case BREAK: cpu_halt = 1; break;
 
         // Управляющие
-        case RJMP:  pc = get_rjmp(); cycles = 2; break;
-        case RCALL: push16(pc); pc = get_rjmp(); cycles = 3; break;
+        case RJMP:  pc = get_rjmp();             cycles = compat ? 2 : 1; break;
+        case RCALL: push16(pc); pc = get_rjmp(); cycles = compat ? 3 : 2; break;
         case RET:   pc = pop16(); break;
         case RETI:  pc = pop16(); flag.i = 1; flag_to_byte(); break;
         case BCLR:  sram[0x5F] &= ~(1 << get_s3()); byte_to_flag(sram[0x5F]); break;
@@ -538,7 +546,7 @@ int AVR::step() {
 
         default:
 
-            printf("Неизвестная инструкция $%04x в pc=$%04x\n", opcode, pc - 1);
+            printf("Неизвестная инструкция $%04x в pc=$%04x\n", opcode, org);
             exit(1);
     }
 

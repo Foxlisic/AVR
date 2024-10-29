@@ -41,16 +41,16 @@ protected:
     Uint32*             screen_buffer;
 
     // Обработка фрейма
-    int width, height, scale, frame_length, pticks;
+    int width, height, scale, frame_length;
     int x, y, _hs, _vs;
-
 
     // Отладчик
     char        ds_line[256];
 
     // Процессор
+    int         compat = 0;
     int         instr_counter, cpu_halt, cycles;
-    uint16_t    pc;
+    uint16_t    pc = 0;
     uint16_t    pctop = 0xFFFF;
     CPUFlags    flag;
     uint16_t    program[65536];
@@ -68,6 +68,7 @@ public:
     void        pset(int x, int y, Uint32 cl);
 
     // Объявление процессора
+    void        reset();
     uint8_t     get(uint16_t addr);
     void        put(uint16_t addr, uint8_t value);
     uint8_t     readpgm(uint16_t a);

@@ -155,4 +155,7 @@ void AVR::assign()
     assign_mask("1001001ddddd1111", PUSH);
     assign_mask("1001000ddddd1111", POP);
     assign_mask("10010100KKKK1011", DES);
+
+    // Генератор avr_assign.h
+    // for (int i = 0; i < 65536; i++) printf("0x%02X,%s", map[i], (i % 256) == 255 ? "\n" : "");
 }
