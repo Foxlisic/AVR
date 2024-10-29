@@ -3,13 +3,9 @@
 // Прочесть следующий опкод
 int AVR::ds_fetch(uint& addr) {
 
-    int L = program[addr];
-    addr = (addr + 1) & (128*1024 - 1);
-
-    int H = program[addr];
-    addr = (addr + 1) & (128*1024 - 1);
-
-    return H*256 + L;
+    uint16_t D = program[addr];
+    addr = (addr + 1) & pctop;
+    return D;
 }
 
 // Дизассемблировать адрес

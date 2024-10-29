@@ -30,18 +30,8 @@ void AVR::assign()
 {
     int i;
 
-    for (i = 0; i < 65536; i++) { sram[i] = i < 32 ? 0xFF : 0; program[i] = 0; }
     for (i = 0; i < 65536; i++) { map[i] = UNDEFINED; }
 
-    sram[0x5D] = 0xFF;
-    sram[0x5E] = 0xEF;
-    sram[0x5F] = 0x00; // SREG
-
-    // Очистка флагов
-    flag.c = 0; flag.s = 0;
-    flag.z = 0; flag.h = 0;
-    flag.n = 0; flag.t = 0;
-    flag.v = 0; flag.i = 0;
 
     // Арифметические на 2 регистра
     assign_mask("000001rdddddrrrr", CPC);

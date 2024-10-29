@@ -26,6 +26,12 @@ AVR::AVR(int argc, char** argv)
         // Опции
         if (argv[i][0] == '-') {
 
+            switch (argv[i][1]) {
+
+                // Активация дебаггера
+                case 'd': ds_enable = 1; break;
+            }
+
         } else {
 
             fp = fopen(argv[i], "rb");
@@ -75,7 +81,19 @@ int AVR::main()
         }
 
         // Выполнение инструкции 25 Мгц / 60 кадров
-        while (cc < target) { ips++; cc += step(); }
+        while (cc < target) {
+
+            if (ds_enable) {
+
+                ds_info(pc);
+                printf("%04X: %s\n", pc, ds_line);
+            }
+
+            ips++; cc += step();
+        }
+
+        // Обновить экран
+        update_screen();
 
         // Подсчет сколько необходимо миллисекунд ожидания после выполнения кадра
         ticks += frame_length - SDL_GetTicks();
@@ -90,6 +108,66 @@ int AVR::main()
         // Ожидать нерастраченное время
         SDL_Delay(ticks);
     }
+}
+
+// Чтение из памяти
+uint8_t AVR::get(uint16_t addr)
+{
+    uint8_t dv = sram[addr];
+
+    return dv;
+}
+
+// Сохранение в память
+void AVR::put(uint16_t addr, uint8_t value)
+{
+    sram[addr] = value;
+
+    switch (addr) {
+
+        case 0x20: video_mode = value; break;
+
+        // 16 битное адрес, сначала пишется младший, потом старший байт
+        case 0x21: video_a16  = value*256 + (video_a16 >> 8); break;
+
+        // Запись байта в видеопамять
+        case 0x22:
+
+            video[65536*(video_mode & 1) + video_a16] = value;
+            video_a16++;
+            break;
+    }
+
+    // Запись во флаги
+    if (addr == 0x5F) byte_to_flag(value);
+}
+
+
+void AVR::update_screen()
+{
+    switch (video_mode)
+    {
+        // 80x25
+        case 0:
+
+            for (int y = 0; y < 25; y++)
+            for (int x = 0; x < 80; x++) {
+
+                int a = video[2*x + y*160    ];
+                int b = video[2*x + y*160 + 1];
+
+                for (int i = 0; i < 16; i++) {
+
+                    int c = charmap[a*16 + i];
+                    for (int j = 0; j < 8; j++) {
+                        pset(x*8 + j, y*16 + i, c & (0x80 >> j) ? dac[b & 15] : dac[b >> 4]);
+                    }
+                }
+            }
+
+            break;
+    }
+
 }
 
 // Убрать окно из памяти

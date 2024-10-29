@@ -1,26 +1,31 @@
 #include "avr.h"
+#include "avr_font.h"
 #include "avr_assign.h"
 
 void AVR::reset()
 {
     pc = 0;
-}
 
-// Чтение из памяти
-uint8_t AVR::get(uint16_t addr)
-{
-    uint8_t dv = sram[addr];
+    // SP=FFFFh
+    sram[0x5D] = 0xFF;
+    sram[0x5E] = 0xFF;
+    sram[0x5F] = 0x00;
 
-    return dv;
-}
+    // Очистка флагов
+    flag.c = 0; flag.s = 0;
+    flag.z = 0; flag.h = 0;
+    flag.n = 0; flag.t = 0;
+    flag.v = 0; flag.i = 0;
 
-// Сохранение в память
-void AVR::put(uint16_t addr, uint8_t value)
-{
-    sram[addr] = value;
+    // Загрузка шрифтов
+    for (int i = 0; i < 128*1024; i++) video[i] = 0;
+    for (int i = 0; i < 4096; i++) charmap[i] = ansi16[i>>4][i & 15];
 
-    // Запись во флаги
-    if (addr == 0x5F) byte_to_flag(value);
+    // Очисткап программной памяти
+    for (int i = 0; i < 65536; i++) { sram[i] = i < 32 ? 0xFF : 0; program[i] = 0; }
+
+    // Загрузка палитры
+    for (int i = 0; i < 256; i++) dac[i] = DOS13[i];
 }
 
 // Байт во флаги
