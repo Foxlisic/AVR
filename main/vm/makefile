@@ -2,7 +2,7 @@ all: app
 	./avr
 
 app: avr_cpu.o avr_assign.o avr_disasm.o
-	g++ -o avr avr.cc -lSDL2
+	g++ -Ofast -o avr avr.cc -lSDL2
 
 # Сборка o-файлов
 avr_cpu.o: avr_cpu.cc
@@ -12,4 +12,4 @@ avr_assign.o: avr_assign.cc
 avr_disasm.o: avr_disasm.cc
 	g++ -c avr_disasm.cc -o avr_disasm.o
 clean:
-	rm avr
+	rm avr *.o

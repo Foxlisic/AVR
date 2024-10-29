@@ -1,27 +1,15 @@
 #include "avr.h"
 
 // Чтение из памяти
-unsigned char AVR::get(int addr) {
+uint8_t AVR::get(uint16_t addr) {
 
-    addr &= 0xFFFF;
+    uint8_t dv = sram[addr];
 
-    unsigned char dv = 0;
-
-    // Очистка бита в порту 00 при чтении
-    switch (addr) {
-
-
-        // Остальная память
-        default: dv = sram[addr]; break;
-    }
-
-    return dv & 0xFF;
+    return dv;
 }
 
 // Сохранение в память
-void AVR::put(int addr, unsigned char value) {
-
-    addr &= 0xFFFF;
+void AVR::put(uint16_t addr, uint8_t value) {
 
     sram[addr] = value;
 
@@ -30,7 +18,7 @@ void AVR::put(int addr, unsigned char value) {
 }
 
 // Байт во флаги
-void AVR::byte_to_flag(unsigned char f) {
+void AVR::byte_to_flag(uint8_t f) {
 
     flag.c = (f >> 0) & 1;
     flag.z = (f >> 1) & 1;
@@ -43,9 +31,9 @@ void AVR::byte_to_flag(unsigned char f) {
 };
 
 // Флаги в байты
-unsigned char AVR::flag_to_byte() {
+uint8_t AVR::flag_to_byte() {
 
-    unsigned char f =
+    uint8_t f =
         (flag.i<<7) |
         (flag.t<<6) |
         (flag.h<<5) |
@@ -65,7 +53,7 @@ uint16_t AVR::neg(uint16_t n) {
 }
 
 // Установка флагов
-void AVR::set_logic_flags(unsigned char r) {
+void AVR::set_logic_flags(uint8_t r) {
 
     flag.v = 0;
     flag.n = (r & 0x80) ? 1 : 0;
@@ -153,7 +141,7 @@ int AVR::skip_instr() {
         case LDS:
         case STS:
 
-            pc += 2;
+            pc = (pc + 1) & pctop;
             break;
     }
 
@@ -165,8 +153,15 @@ void AVR::interruptcall() {
 
     flag.i = 0;
     flag_to_byte();
-    push16(pc >> 1);
-    pc = 4;
+    push16(pc);
+    pc = 2;
+}
+
+// Чтение из программной памяти
+uint8_t AVR::readpgm(uint16_t a)
+{
+    uint16_t t = program[a & 0xFFFE & pctop];
+    return a & 1 ? t >> 8 : t;
 }
 
 // Исполнение шага процессора
@@ -186,14 +181,14 @@ int AVR::step() {
         case NOP: break;
 
         // Остановка выполнения кода
-        case SLEEP: /* pc = pc - 2; break; */
+        case SLEEP: /* pc = pc - 1; break; */
         case BREAK: cpu_halt = 1; break;
 
         // Управляющие
         case RJMP:  pc = get_rjmp(); cycles = 2; break;
-        case RCALL: push16(pc >> 1); pc = get_rjmp(); cycles = 3; break;
-        case RET:   pc = pop16() << 1; break;
-        case RETI:  pc = pop16() << 1; flag.i = 1; flag_to_byte(); break;
+        case RCALL: push16(pc); pc = get_rjmp(); cycles = 3; break;
+        case RET:   pc = pop16(); break;
+        case RETI:  pc = pop16(); flag.i = 1; flag_to_byte(); break;
         case BCLR:  sram[0x5F] &= ~(1 << get_s3()); byte_to_flag(sram[0x5F]); break;
         case BSET:  sram[0x5F] |=  (1 << get_s3()); byte_to_flag(sram[0x5F]); break;
 
@@ -205,8 +200,10 @@ int AVR::step() {
         case CPSE: if (get_rd() == get_rr())              cycles = skip_instr(); break;
         case SBRC: if (!(get_rd() & (1 << (opcode & 7)))) cycles = skip_instr(); break;
         case SBRS: if   (get_rd() & (1 << (opcode & 7)))  cycles = skip_instr(); break;
+
+        // Пропуск, если в порту Ap есть бит [или нет бита]
         case SBIS:
-        case SBIC: // Пропуск, если в порту Ap есть бит (или нет бита)
+        case SBIC:
 
             b = (opcode & 7);
             A = (opcode & 0xF8) >> 3;
@@ -443,9 +440,9 @@ int AVR::step() {
         case LDI: put_rdi(get_imm8()); break;
 
         // Загрузка из памяти в регистры
-        case LPM0Z:  sram[0] = program[get_Z()]; cycles = 3; break;
-        case LPMRZ:  put_rd(program[get_Z()]); cycles = 3; break;
-        case LPMRZ_: p = get_Z(); put_rd(program[p]); put_Z(p+1); cycles = 3; break;
+        case LPM0Z:  sram[0] = readpgm(get_Z()); cycles = 3; break;
+        case LPMRZ:  put_rd(readpgm(get_Z())); cycles = 3; break;
+        case LPMRZ_: p = get_Z(); put_rd(readpgm(p)); put_Z(p+1); cycles = 3; break;
 
         // Store X
         case STX:   put(get_X(), get_rd()); cycles = 2; break;
@@ -486,13 +483,13 @@ int AVR::step() {
             put16(d, get16(r));
             break;
 
-        case LDS: d = fetch(); put_rd( get(d) ); break;
+        case LDS: d = fetch(); put_rd(get(d)); break;
         case STS: d = fetch(); put(d, get_rd()); break;
 
         // Загрузка из доп. памяти
-        case ELPM0Z:  sram[0] = program[ get_Z() + (sram[0x5B] << 16) ]; cycles = 3; break; break;
-        case ELPMRZ:  put_rd(program[ get_Z() + (sram[0x5B] << 16) ]); break;
-        case ELPMRZ_: p = get_Z() + (sram[0x5B] << 16); put_rd(program[p]); put_Z(p+1); cycles = 3; break;
+        case ELPM0Z:  sram[0] = readpgm(get_Z() + (sram[0x5B] << 16)); cycles = 3; break; break;
+        case ELPMRZ:  put_rd(readpgm(get_Z() + (sram[0x5B] << 16))); break;
+        case ELPMRZ_: p = get_Z() + (sram[0x5B] << 16); put_rd(readpgm(p)); put_Z(p+1); cycles = 3; break;
 
         // ------------ РАСШИРЕНИЯ -------------------------------------
 
@@ -528,20 +525,20 @@ int AVR::step() {
 
         case JMP:
 
-            pc = 2 * ((get_jmp() << 16) | fetch());
+            pc = ((get_jmp() << 16) | fetch());
             cycles = 3;
             break;
 
         case CALL:
 
-            push16((pc + 2) >> 1);
-            pc = 2 * ((get_jmp() << 16) | fetch());
+            push16(pc + 1);
+            pc = ((get_jmp() << 16) | fetch());
             cycles = 4;
             break;
 
         default:
 
-            printf("Неизвестная инструкция $%04x в pc=$%04x\n", opcode, pc - 2);
+            printf("Неизвестная инструкция $%04x в pc=$%04x\n", opcode, pc - 1);
             exit(1);
     }
 

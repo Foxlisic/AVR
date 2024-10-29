@@ -8,7 +8,7 @@ AVR::AVR(int argc, char** argv)
     scale        = 2;               // Удвоение пикселей
     width        = 640;             // Ширина экрана
     height       = 400;             // Высота экрана
-    frame_length = (1000/20);       // 20 FPS
+    frame_length = (1000/60);       // 60 FPS
     pticks       = 0;
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
@@ -43,6 +43,8 @@ int AVR::main()
             // Событие выхода
             switch (evt.type) { case SDL_QUIT: return 0; }
         }
+
+        // Выполнение инструкции 25 Мгц / 60 кадров
 
         // Обновление экрана
         if (ticks - pticks >= frame_length) {
