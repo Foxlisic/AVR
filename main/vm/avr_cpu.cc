@@ -1,7 +1,3 @@
-#include "avr.h"
-#include "avr_font.h"
-#include "avr_assign.h"
-
 void AVR::reset()
 {
     pc = 0;

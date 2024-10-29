@@ -1,5 +1,3 @@
-#include "avr.h"
-
 // Прочесть следующий опкод
 int AVR::ds_fetch(uint& addr) {
 

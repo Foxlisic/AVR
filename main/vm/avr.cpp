@@ -85,12 +85,18 @@ int AVR::main()
 
             if (ds_enable) {
 
-                ds_info(pc);
-                printf("%04X: %s\n", pc, ds_line);
+                // RJMP -1 === HALT
+                if (program[pc] != 0xCFFF) {
+
+                    ds_info(pc);
+                    printf("[%08X] %05X %s\n", tstates + cc, 2*pc, ds_line);
+                }
             }
 
             ips++; cc += step();
         }
+
+        tstates += cc;
 
         // Обновить экран
         update_screen();

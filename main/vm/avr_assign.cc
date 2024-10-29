@@ -1,5 +1,3 @@
-#include "avr.h"
-
 // Применение маски к опкоду
 void AVR::assign_mask(const char* mask, int opcode)
 {

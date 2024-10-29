@@ -83,6 +83,7 @@ protected:
     int width, height, scale, frame_length;
     int x, y, _hs, _vs;
 
+    uint32_t    tstates = 0;
     uint8_t     video_mode = 0;
     uint16_t    video_a16 = 0;
 
