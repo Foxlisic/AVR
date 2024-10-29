@@ -1,7 +1,12 @@
 #include <avrio.h>
 
+static const char HE[] = "Hello World!";
+
 int main() {
 
-    outp(2, 'x');
-    for (int i = 0; i < 256; i++) outp(2, 0x37);
+    int i = 0;
+    while (HE[i]) {
+        outp(2, HE[i++]);
+        outp(2, 0x17);
+    }
 }

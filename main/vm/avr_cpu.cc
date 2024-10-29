@@ -3,6 +3,7 @@ void AVR::reset()
     pc = 0;
 
     // SP=FFFFh
+    sram[0x5B] = 0x00;
     sram[0x5D] = 0xFF;
     sram[0x5E] = 0xFF;
     sram[0x5F] = 0x00;
@@ -168,7 +169,7 @@ void AVR::interruptcall()
 // Чтение из программной памяти
 uint8_t AVR::readpgm(uint16_t a)
 {
-    uint16_t t = program[a & 0xFFFE & pctop];
+    uint16_t t = program[(a >> 1) & pctop];
     return a & 1 ? t >> 8 : t;
 }
 
@@ -496,7 +497,7 @@ int AVR::step()
         case STS: d = fetch(); put(d, get_rd()); break;
 
         // Загрузка из доп. памяти
-        case ELPM0Z:  sram[0] = readpgm(get_Z() + (sram[0x5B] << 16)); cycles = 3; break; break;
+        case ELPM0Z:  sram[0] = readpgm(get_Z() + (sram[0x5B] << 16)); cycles = 3; break;
         case ELPMRZ:  put_rd(readpgm(get_Z() + (sram[0x5B] << 16))); break;
         case ELPMRZ_: p = get_Z() + (sram[0x5B] << 16); put_rd(readpgm(p)); put_Z(p+1); cycles = 3; break;
 
