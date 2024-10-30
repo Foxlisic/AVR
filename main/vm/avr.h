@@ -1,12 +1,5 @@
 #include <SDL2/SDL.h>
 
-static const char* ds_brcs[4][8] = {
-    {"cc", "ne", "pl", "vc", "ge", "hc", "tc", "id"},
-    {"cs", "eq", "mi", "vs", "lt", "hs", "ts", "ie"},
-    {"sec","sez","sen","sev","ses","seh","set","sei"},
-    {"clc","clz","cln","clv","cls","clh","clt","cli"}
-};
-
 struct CPUFlags {
     int c, z, n, v, s, h, t, i;
 };
@@ -27,7 +20,6 @@ enum AVROpcodes {
     LPM0Z,  LPMRZ,  LPMRZ_, ELPM0Z, ELPMRZ, ELPMRZ_, SPM,   SPM2,
     SLEEP,  WDR,    BREAK,  NOP,    IN,     OUT,    PUSH,   POP,    DES
 };
-
 
 // Палитра для DOS 320x200 MODE 13h
 static const int DOS13[256] =
@@ -84,8 +76,11 @@ protected:
     int x, y, _hs, _vs;
 
     uint32_t    tstates = 0;
+    uint32_t    video_addr = 0;
     uint8_t     video_mode = 0;
-    uint16_t    video_a16 = 0;
+    uint8_t     cursor_x = 0,
+                cursor_y = 0;
+    uint16_t    loc_x = 0, loc_y = 0;
 
     // Отладчик
     char        ds_line[256];
@@ -115,6 +110,8 @@ public:
     int         destroy();
     void        pset(int x, int y, Uint32 cl);
     void        update_screen();
+    void        disassemble();
+    void        recalc_video_address();
 
     // Объявление процессора
     void        reset();

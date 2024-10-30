@@ -1,3 +1,11 @@
+
+static const char* ds_brcs[4][8] = {
+    {"cc", "ne", "pl", "vc", "ge", "hc", "tc", "id"},
+    {"cs", "eq", "mi", "vs", "lt", "hs", "ts", "ie"},
+    {"sec","sez","sen","sev","ses","seh","set","sei"},
+    {"clc","clz","cln","clv","cls","clh","clt","cli"}
+};
+
 // Прочесть следующий опкод
 int AVR::ds_fetch(uint& addr) {
 
@@ -30,8 +38,8 @@ int AVR::ds_info(uint addr) {
     int Qi = (opcode & 0x007) | ((opcode & 0xC00)>>7) | ((opcode & 0x2000) >> 8);
 
     // Относительный переход
-    int Rjmp = addr + 2*((opcode & 0x800) > 0 ? (opcode & 0x7FF) - 0x800 : (opcode & 0x7FF));
-    int Bjmp = addr + 2*((opcode & 0x200) > 0 ? ((opcode & 0x1F8)>>3) - 0x40 : ((opcode & 0x1F8)>>3) );
+    int Rjmp = 2*addr + 2*((opcode & 0x800) > 0 ? (opcode & 0x7FF) - 0x800 : (opcode & 0x7FF));
+    int Bjmp = 2*addr + 2*((opcode & 0x200) > 0 ? ((opcode & 0x1F8)>>3) - 0x40 : ((opcode & 0x1F8)>>3) );
     int Bit7 = opcode & 7;
     int bit7s = (opcode & 0x70) >> 4;
     int jmpfar = (((opcode & 0x1F0) >> 3) | (opcode & 1)) << 16;

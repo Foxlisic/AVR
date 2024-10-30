@@ -83,17 +83,8 @@ int AVR::main()
         // Выполнение инструкции 25 Мгц / 60 кадров
         while (cc < target) {
 
-            if (ds_enable) {
-
-                // RJMP -1 === HALT
-                if (program[pc] != 0xCFFF) {
-
-                    ds_info(pc);
-                    printf("[%08X] %05X %s\n", tstates + cc, 2*pc, ds_line);
-                }
-            }
-
-            ips++; cc += step();
+            disassemble();
+            cc += step(); ips++;
         }
 
         tstates += cc;
@@ -116,10 +107,29 @@ int AVR::main()
     }
 }
 
+void AVR::disassemble()
+{
+    if (ds_enable) {
+
+        // RJMP -1 === HALT
+        if (program[pc] != 0xCFFF) {
+
+            ds_info(pc);
+            printf("%05X %s\n", 2*pc, ds_line);
+        }
+    }
+}
+
 // Чтение из памяти
 uint8_t AVR::get(uint16_t addr)
 {
     uint8_t dv = sram[addr];
+
+    switch (addr) {
+
+        // Читать из памяти
+        case 0x22: dv = video[video_addr++]; break;
+    }
 
     return dv;
 }
@@ -134,20 +144,34 @@ void AVR::put(uint16_t addr, uint8_t value)
         case 0x20: video_mode = value; break;
 
         // 16 битное адрес, сначала пишется младший, потом старший байт
-        case 0x21: video_a16  = value*256 + (video_a16 >> 8); break;
+        case 0x21: cursor_y = cursor_x; cursor_x = value; break;
 
         // Запись байта в видеопамять
-        case 0x22:
+        case 0x22: video[video_addr++] = value; break;
 
-            video[65536*(video_mode & 1) + video_a16] = value;
-            video_a16++;
-            break;
+        // Позиционирование
+        case 0x2C: loc_x = (loc_x & 0xFF00) | value;     recalc_video_address(); break;
+        case 0x2D: loc_x = (loc_x & 0x00FF) | value*256; recalc_video_address(); break;
+        case 0x2E: loc_y = (loc_y & 0xFF00) | value;     recalc_video_address(); break;
+        case 0x2F: loc_y = (loc_y & 0x00FF) | value*256; recalc_video_address(); break;
     }
 
     // Запись во флаги
     if (addr == 0x5F) byte_to_flag(value);
 }
 
+// На основе locx, locy рассчитать новый video_addr
+void AVR::recalc_video_address()
+{
+    switch (video_mode)
+    {
+        case 0: video_addr = 160*loc_y + 2*loc_x; break;
+        case 1:
+        case 2: video_addr = 320*loc_y + loc_x; break;
+        case 3:
+        case 4: video_addr = 640*loc_y + loc_x; break;
+    }
+}
 
 void AVR::update_screen()
 {
