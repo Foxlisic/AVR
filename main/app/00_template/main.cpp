@@ -1,5 +1,5 @@
 #include <avrio.h>
-#include <text.cc>
+#include <screen3.cc>
 
 int main()
 {

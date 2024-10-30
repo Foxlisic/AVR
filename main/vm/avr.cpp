@@ -67,7 +67,7 @@ int AVR::main()
 
     for (;;) {
 
-        int cc = 0, ips = 0, target = (25000000/60);
+        int ts, cc = 0, ips = 0, target = (25000000/60);
         Uint32 ticks = SDL_GetTicks();
 
         // Прием событий
@@ -84,10 +84,12 @@ int AVR::main()
         while (cc < target) {
 
             disassemble();
-            cc += step(); ips++;
-        }
 
-        tstates += cc;
+            ts  = step();
+            cc += ts;
+            tstates += ts;
+            ips++;
+        }
 
         // Обновить экран
         update_screen();
@@ -115,7 +117,7 @@ void AVR::disassemble()
         if (program[pc] != 0xCFFF) {
 
             ds_info(pc);
-            printf("%05X %s\n", 2*pc, ds_line);
+            printf("[%05X] %04X %s\n", 2*pc, tstates, ds_line);
         }
     }
 }
@@ -208,6 +210,17 @@ void AVR::update_screen()
             for (int y = 0; y < 400; y++)
             for (int x = 0; x < 640; x++) {
                 pset(x, y, dac[video[bank + (y >> 1)*320 + (x >> 1)]]);
+            }
+
+            break;
+
+        // 640x400 Bank 0/1
+        case 4: case 5:
+
+            bank = 131072*(video_mode & 1);
+            for (int y = 0; y < 400; y++)
+            for (int x = 0; x < 640; x++) {
+                pset(x, y, dac[video[bank + y*640 + x] & 15]);
             }
 
             break;
