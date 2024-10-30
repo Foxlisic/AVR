@@ -195,16 +195,16 @@ int AVR::step()
         case BREAK: cpu_halt = 1; break;
 
         // Управляющие
-        case RJMP:  pc = get_rjmp();             cycles = compat ? 2 : 1; break;
-        case RCALL: push16(pc); pc = get_rjmp(); cycles = compat ? 3 : 2; break;
+        case RJMP:  pc = get_rjmp();break;
+        case RCALL: push16(pc); pc = get_rjmp(); cycles = 2; break;
         case RET:   pc = pop16(); break;
         case RETI:  pc = pop16(); flag.i = 1; flag_to_byte(); break;
         case BCLR:  sram[0x5F] &= ~(1 << get_s3()); byte_to_flag(sram[0x5F]); break;
         case BSET:  sram[0x5F] |=  (1 << get_s3()); byte_to_flag(sram[0x5F]); break;
 
         // Условные перехдоды
-        case BRBS: if ( (sram[0x5F] & (1<<(opcode & 7)))) { pc = get_branch(); cycles = 2; } break;
-        case BRBC: if (!(sram[0x5F] & (1<<(opcode & 7)))) { pc = get_branch(); cycles = 2; }  break;
+        case BRBS: if ( (sram[0x5F] & (1<<(opcode & 7)))) { pc = get_branch(); } break;
+        case BRBC: if (!(sram[0x5F] & (1<<(opcode & 7)))) { pc = get_branch(); }  break;
 
         // --------------------------------
         case CPSE: if (get_rd() == get_rr())              cycles = skip_instr(); break;
@@ -237,11 +237,10 @@ int AVR::step()
                  put(0x20 + A, get(0x20 + A) & ~b);
             else put(0x20 + A, get(0x20 + A) |  b);
 
-            cycles = 2;
             break;
 
         // Стек
-        case PUSH: push8(get_rd()); cycles = 2; break;
+        case PUSH: push8(get_rd()); break;
         case POP:  put_rd(pop8()); cycles = 2; break;
 
         // Срециальные
@@ -394,7 +393,6 @@ int AVR::step()
             r = a + get_ka();
             set_adiw_flag(a, r);
             put16(d, r);
-            cycles = 2;
             break;
 
         // Вычитание 16-битного числа
@@ -405,7 +403,6 @@ int AVR::step()
             r = a - get_ka();
             set_sbiw_flag(a, r);
             put16(d, r);
-            cycles = 2;
             break;
 
         // Логический сдвиг вправо
@@ -450,39 +447,39 @@ int AVR::step()
         case LDI: put_rdi(get_imm8()); break;
 
         // Загрузка из памяти в регистры
-        case LPM0Z:  sram[0] = readpgm(get_Z()); cycles = 3; break;
-        case LPMRZ:  put_rd(readpgm(get_Z())); cycles = 3; break;
-        case LPMRZ_: p = get_Z(); put_rd(readpgm(p)); put_Z(p+1); cycles = 3; break;
+        case LPM0Z:  sram[0] = readpgm(get_Z()); cycles = 2; break;
+        case LPMRZ:  put_rd(readpgm(get_Z()));   cycles = 2; break;
+        case LPMRZ_: p = get_Z(); put_rd(readpgm(p)); put_Z(p+1); cycles = 2; break;
 
-        // Store X
-        case STX:   put(get_X(), get_rd()); cycles = 2; break;
-        case STX_:  p = get_X();     put(p, get_rd()); put_X(p+1); cycles = 2; break;
-        case ST_X:  p = get_X() - 1; put(p, get_rd()); put_X(p); cycles = 2; break;
+        // 1T Store X
+        case STX:   put(get_X(), get_rd()); break;
+        case STX_:  p = get_X();     put(p, get_rd()); put_X(p+1); break;
+        case ST_X:  p = get_X() - 1; put(p, get_rd()); put_X(p); break;
 
-        // Store Y
-        case STYQ:  put((get_Y() + get_qi()), get_rd()); cycles = 2; break;
-        case STY_:  p = get_Y();     put(p, get_rd()); put_Y(p+1); cycles = 2; break;
-        case ST_Y:  p = get_Y() - 1; put(p, get_rd()); put_Y(p); cycles = 2; break;
+        // 1T Store Y
+        case STYQ:  put((get_Y() + get_qi()), get_rd()); break;
+        case STY_:  p = get_Y();     put(p, get_rd()); put_Y(p+1); break;
+        case ST_Y:  p = get_Y() - 1; put(p, get_rd()); put_Y(p); break;
 
-        // Store Z
-        case STZQ:  put((get_Z() + get_qi()), get_rd()); cycles = 2; break;
-        case STZ_:  p = get_Z();     put(p, get_rd()); put_Z(p+1); cycles = 2; break;
-        case ST_Z:  p = get_Z() - 1; put(p, get_rd()); put_Z(p); cycles = 2; break;
+        // 1T Store Z
+        case STZQ:  put((get_Z() + get_qi()), get_rd()); break;
+        case STZ_:  p = get_Z();     put(p, get_rd()); put_Z(p+1); break;
+        case ST_Z:  p = get_Z() - 1; put(p, get_rd()); put_Z(p); break;
 
-        // Load X
-        case LDX:   put_rd(get(get_X())); break;
-        case LDX_:  p = get_X();     put_rd(get(p)); put_X(p+1); break;
-        case LD_X:  p = get_X() - 1; put_rd(get(p)); put_X(p); break;
+        // 2T Load X
+        case LDX:   put_rd(get(get_X()));                        cycles = 2; break;
+        case LDX_:  p = get_X();     put_rd(get(p)); put_X(p+1); cycles = 2; break;
+        case LD_X:  p = get_X() - 1; put_rd(get(p)); put_X(p);   cycles = 2; break;
 
-        // Load Y
-        case LDYQ:  put_rd(get((get_Y() + get_qi()))); cycles = 2; break;
+        // 2T Load Y
+        case LDYQ:  put_rd(get((get_Y() + get_qi())));           cycles = 2; break;
         case LDY_:  p = get_Y();     put_rd(get(p)); put_Y(p+1); cycles = 2; break;
-        case LD_Y:  p = get_Y() - 1; put_rd(get(p)); put_Y(p); cycles = 2; break;
+        case LD_Y:  p = get_Y() - 1; put_rd(get(p)); put_Y(p);   cycles = 2; break;
 
-        // Load Z
-        case LDZQ:  put_rd(get((get_Z() + get_qi()))); cycles = 2; break;
+        // 2T Load Z
+        case LDZQ:  put_rd(get((get_Z() + get_qi())));           cycles = 2; break;
         case LDZ_:  p = get_Z();     put_rd(get(p)); put_Z(p+1); cycles = 2; break;
-        case LD_Z:  p = get_Z() - 1; put_rd(get(p)); put_Z(p); cycles = 2; break;
+        case LD_Z:  p = get_Z() - 1; put_rd(get(p)); put_Z(p);   cycles = 2; break;
 
         case MOV:   put_rd(get_rr()); break;
         case MOVW:
@@ -497,9 +494,9 @@ int AVR::step()
         case STS: d = fetch(); put(d, get_rd()); break;
 
         // Загрузка из доп. памяти
-        case ELPM0Z:  sram[0] = readpgm(get_Z() + (sram[0x5B] << 16)); cycles = 3; break;
+        case ELPM0Z:  sram[0] = readpgm(get_Z() + (sram[0x5B] << 16)); cycles = 2; break;
         case ELPMRZ:  put_rd(readpgm(get_Z() + (sram[0x5B] << 16))); break;
-        case ELPMRZ_: p = get_Z() + (sram[0x5B] << 16); put_rd(readpgm(p)); put_Z(p+1); cycles = 3; break;
+        case ELPMRZ_: p = get_Z() + (sram[0x5B] << 16); put_rd(readpgm(p)); put_Z(p+1); cycles = 2; break;
 
         // ------------ РАСШИРЕНИЯ -------------------------------------
 
@@ -536,14 +533,14 @@ int AVR::step()
         case JMP:
 
             pc = ((get_jmp() << 16) | fetch());
-            cycles = 3;
+            cycles = 2;
             break;
 
         case CALL:
 
             push16(pc + 1);
             pc = ((get_jmp() << 16) | fetch());
-            cycles = 4;
+            cycles = 2;
             break;
 
         default:
