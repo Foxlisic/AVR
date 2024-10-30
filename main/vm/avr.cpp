@@ -144,7 +144,7 @@ void AVR::put(uint16_t addr, uint8_t value)
         case 0x20: video_mode = value; break;
 
         // 16 битное адрес, сначала пишется младший, потом старший байт
-        case 0x21: cursor_y = cursor_x; cursor_x = value; break;
+        case 0x21: cursor_x = cursor_y; cursor_y = value; break;
 
         // Запись байта в видеопамять
         case 0x22: video[video_addr++] = value; break;
@@ -175,6 +175,7 @@ void AVR::recalc_video_address()
 
 void AVR::update_screen()
 {
+    int bank;
     switch (video_mode)
     {
         // 80x25
@@ -189,15 +190,28 @@ void AVR::update_screen()
                 for (int i = 0; i < 16; i++) {
 
                     int c = charmap[a*16 + i];
+                    if (i >= 14 && cursor_flash < 30 && x == cursor_x && y == cursor_y) c = 0xFF;
+
                     for (int j = 0; j < 8; j++) {
                         pset(x*8 + j, y*16 + i, c & (0x80 >> j) ? dac[b & 15] : dac[b >> 4]);
                     }
                 }
             }
 
+            cursor_flash = (cursor_flash + 1) % 60;
+            break;
+
+        // 320x200 Bank 0/1
+        case 2: case 3:
+
+            bank = 65536*(video_mode & 1);
+            for (int y = 0; y < 400; y++)
+            for (int x = 0; x < 640; x++) {
+                pset(x, y, dac[video[bank + (y >> 1)*320 + (x >> 1)]]);
+            }
+
             break;
     }
-
 }
 
 // Убрать окно из памяти

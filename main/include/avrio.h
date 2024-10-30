@@ -33,8 +33,9 @@ inline byte inp(int port) { return ((volatile byte*)0x20)[port]; }
 inline void outp(int port, unsigned char val) { ((volatile unsigned char*)0x20)[port] = val; }
 
 // Установка графического положения точки
-inline void putv(byte c) { outp(0x02, c); }
-inline byte getv() { return inp(0x02); }
-inline void setxy(word x, word y) { outp(0x0C, x); outp(0x0D, x >> 8); outp(0x0E, y); outp(0x0F, y >> 8); }
+inline void putv(byte c)            { outp(0x02, c); }
+inline byte getv()                  { return inp(0x02); }
+inline void setxy(word x, word y)   { outp(0x0C, x); outp(0x0D, x >> 8); outp(0x0E, y); outp(0x0F, y >> 8); }
+inline void cursor(byte x, byte y)  { outp(0x01, x); outp(0x01, y); setxy(x, y); }
 
 #endif

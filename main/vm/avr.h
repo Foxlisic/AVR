@@ -89,6 +89,7 @@ protected:
     uint8_t     texture[256*1024];
     uint8_t     charmap[4096];
     uint32_t    dac[256];
+    int         cursor_flash = 0;
 
     // Процессор
     int         compat = 0;
