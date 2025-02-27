@@ -15,7 +15,7 @@ void AVR::reset()
     flag.v = 0; flag.i = 0;
 
     // Загрузка шрифтов
-    for (int i = 0; i < 128*1024; i++) video[i] = 0;
+    for (int i = 0; i < 64*1024; i++) video[i] = 0;
     for (int i = 0; i < 4096; i++) charmap[i] = ansi16[i>>4][i & 15];
 
     // Очисткап программной памяти

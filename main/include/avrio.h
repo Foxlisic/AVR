@@ -12,30 +12,17 @@
 #define ulong       unsigned long
 #define dword       unsigned long
 
-// Описания всех портов
-enum PortsID
-{
-    VIDEOMODE       = 0x00
-};
-
-// Список видеорежимов
-enum VideoModes
-{
-    VM_80x25        = 0,
-    VM_320x200      = 2,
-    VM_640x400      = 4
-};
-
 // Чтение из порта
 inline byte inp(int port) { return ((volatile byte*)0x20)[port]; }
 
 // Запись в порт
 inline void outp(int port, unsigned char val) { ((volatile unsigned char*)0x20)[port] = val; }
 
-// Установка графического положения точки
-inline void putv(byte c)            { outp(0x02, c); }
-inline byte getv()                  { return inp(0x02); }
-inline void setxy(word x, word y)   { outp(0x0C, x); outp(0x0D, x >> 8); outp(0x0E, y); outp(0x0F, y >> 8); }
-inline void cursor(byte x, byte y)  { outp(0x01, x); outp(0x01, y); setxy(x, y); }
+// Графические манипуляции
+inline void cx(byte a)                      { outp(0, a); }
+inline void cy(byte a)                      { outp(1, a); }
+inline void loc(byte x, byte y)             { outp(0, x); outp(0, y); }
+inline void pset(byte x, byte y, byte v)    { outp(0, x); outp(0, y); outp(2, v); }
+inline void padd(byte v)                    { outp(2, v); }
 
 #endif

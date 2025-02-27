@@ -5,9 +5,9 @@ AVR::AVR(int argc, char** argv)
     _hs = 1;
     _vs = 0;
 
-    scale        = 2;               // Удвоение пикселей
-    width        = 640;             // Ширина экрана
-    height       = 400;             // Высота экрана
+    scale        = 4;               // Удвоение пикселей
+    width        = 320;             // Ширина экрана
+    height       = 200;             // Высота экрана
     frame_length = (1000/60);       // 60 FPS
 
     int i = 1;
@@ -126,13 +126,6 @@ void AVR::disassemble()
 uint8_t AVR::get(uint16_t addr)
 {
     uint8_t dv = sram[addr];
-
-    switch (addr) {
-
-        // Читать из памяти
-        case 0x22: dv = video[video_addr++]; break;
-    }
-
     return dv;
 }
 
@@ -141,89 +134,26 @@ void AVR::put(uint16_t addr, uint8_t value)
 {
     sram[addr] = value;
 
-    switch (addr) {
-
-        case 0x20: video_mode = value; break;
-
-        // 16 битное адрес, сначала пишется младший, потом старший байт
-        case 0x21: cursor_x = cursor_y; cursor_y = value; break;
-
-        // Запись байта в видеопамять
-        case 0x22: video[video_addr++] = value; break;
-
-        // Позиционирование
-        case 0x2C: loc_x = (loc_x & 0xFF00) | value;     recalc_video_address(); break;
-        case 0x2D: loc_x = (loc_x & 0x00FF) | value*256; recalc_video_address(); break;
-        case 0x2E: loc_y = (loc_y & 0xFF00) | value;     recalc_video_address(); break;
-        case 0x2F: loc_y = (loc_y & 0x00FF) | value*256; recalc_video_address(); break;
-    }
-
-    // Запись во флаги
-    if (addr == 0x5F) byte_to_flag(value);
-}
-
-// На основе locx, locy рассчитать новый video_addr
-void AVR::recalc_video_address()
-{
-    switch (video_mode)
+    switch (addr)
     {
-        case 0: video_addr = 160*loc_y + 2*loc_x; break;
-        case 1:
-        case 2: video_addr = 320*loc_y + loc_x; break;
-        case 3:
-        case 4: video_addr = 640*loc_y + loc_x; break;
+        case 0x20: cursor_x = value; break;
+        case 0x21: cursor_y = value; break;
+        case 0x22:
+
+            video[cursor_x + cursor_y*256] = value & 15;
+            if (cursor_x++ == 255) cursor_y++;
+            break;
+
+        // Запись во флаги
+        case 0x5F: byte_to_flag(value);
     }
 }
 
 void AVR::update_screen()
 {
-    int bank;
-    switch (video_mode)
-    {
-        // 80x25
-        case 0:
-
-            for (int y = 0; y < 25; y++)
-            for (int x = 0; x < 80; x++) {
-
-                int a = video[2*x + y*160    ];
-                int b = video[2*x + y*160 + 1];
-
-                for (int i = 0; i < 16; i++) {
-
-                    int c = charmap[a*16 + i];
-                    if (i >= 14 && cursor_flash < 30 && x == cursor_x && y == cursor_y) c = 0xFF;
-
-                    for (int j = 0; j < 8; j++) {
-                        pset(x*8 + j, y*16 + i, c & (0x80 >> j) ? dac[b & 15] : dac[b >> 4]);
-                    }
-                }
-            }
-
-            cursor_flash = (cursor_flash + 1) % 60;
-            break;
-
-        // 320x200 Bank 0/1
-        case 2: case 3:
-
-            bank = 65536*(video_mode & 1);
-            for (int y = 0; y < 400; y++)
-            for (int x = 0; x < 640; x++) {
-                pset(x, y, dac[video[bank + (y >> 1)*320 + (x >> 1)]]);
-            }
-
-            break;
-
-        // 640x400 Bank 0/1
-        case 4: case 5:
-
-            bank = 131072*(video_mode & 1);
-            for (int y = 0; y < 400; y++)
-            for (int x = 0; x < 640; x++) {
-                pset(x, y, dac[video[bank + y*640 + x] & 15]);
-            }
-
-            break;
+    for (int y = 0; y < 192; y++)
+    for (int x = 0; x < 256; x++) {
+        pset(32 + x, 4 + y, dac[video[x + y*256]]);
     }
 }
 

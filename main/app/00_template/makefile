@@ -12,4 +12,4 @@ all:
 	$(VM) main.bin -d > avr.log
 
 clean:
-	rm -f *.o rm *.elf *.lst *.bin *.map
+	rm -f *.o rm *.elf *.lst *.bin *.map avr.log

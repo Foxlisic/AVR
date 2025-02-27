@@ -76,20 +76,15 @@ protected:
     int x, y, _hs, _vs;
 
     uint32_t    tstates = 0;
-    uint32_t    video_addr = 0;
-    uint8_t     video_mode = 0;
     uint8_t     cursor_x = 0,
                 cursor_y = 0;
-    uint16_t    loc_x = 0, loc_y = 0;
 
     // Отладчик
     char        ds_line[256];
     int         ds_enable = 0;
-    uint8_t     video  [256*1024];
-    uint8_t     texture[256*1024];
+    uint8_t     video  [64*1024];
     uint8_t     charmap[4096];
     uint32_t    dac[256];
-    int         cursor_flash = 0;
 
     // Процессор
     int         compat = 0;
@@ -112,7 +107,6 @@ public:
     void        pset(int x, int y, Uint32 cl);
     void        update_screen();
     void        disassemble();
-    void        recalc_video_address();
 
     // Объявление процессора
     void        reset();
