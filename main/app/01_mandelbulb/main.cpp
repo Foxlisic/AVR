@@ -22,10 +22,10 @@ int mandel(float cx, float cy)
 int main()
 {
     loc(0, 0);
+    border(0);
 
-    for (int y = -96; y < 96; y++)
+    for (int y = -120; y < 120; y++)
     for (int x = -128; x < 128; x++) {
-        //padd(2);
         padd(mandel((float)x/64, (float)y/64));
     }
 

@@ -7,8 +7,9 @@ AVR::AVR(int argc, char** argv)
 
     scale        = 4;               // Удвоение пикселей
     width        = 320;             // Ширина экрана
-    height       = 200;             // Высота экрана
+    height       = 240;             // Высота экрана
     frame_length = (1000/60);       // 60 FPS
+    border_color = 0;
 
     int i = 1;
     FILE* fp;
@@ -144,6 +145,8 @@ void AVR::put(uint16_t addr, uint8_t value)
             if (cursor_x++ == 255) cursor_y++;
             break;
 
+        case 0x2D: border_color = value & 15; break;
+
         // Запись во флаги
         case 0x5F: byte_to_flag(value);
     }
@@ -151,9 +154,12 @@ void AVR::put(uint16_t addr, uint8_t value)
 
 void AVR::update_screen()
 {
-    for (int y = 0; y < 192; y++)
-    for (int x = 0; x < 256; x++) {
-        pset(32 + x, 4 + y, dac[video[x + y*256]]);
+    for (int y = 0; y < 240; y++)
+    for (int x = 0; x < 320; x++) {
+
+        if (x >= 32 && x < 32+256)
+             pset(x, y, dac[video[(x-32) + y*256]]);
+        else pset(x, y, dac[border_color]);
     }
 }
 
