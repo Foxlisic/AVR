@@ -10,6 +10,8 @@ AVR::AVR(int argc, char** argv)
     height       = 240;             // Высота экрана
     frame_length = (1000/60);       // 60 FPS
     border_color = 0;
+    cursor       = 0;
+    vconfig      = 2;
 
     int i = 1;
     FILE* fp;
@@ -68,7 +70,7 @@ int AVR::main()
 
     for (;;) {
 
-        int ts, cc = 0, ips = 0, target = (25000000/60);
+        int ts, ms = 0, cc = 0, ips = 0, target = (25000000/60);
         Uint32 ticks = SDL_GetTicks();
 
         // Прием событий
@@ -88,8 +90,12 @@ int AVR::main()
 
             ts  = step();
             cc += ts;
+            ms += ts;
+
             tstates += ts;
             ips++;
+
+            if (ms > 249) { ms = 0; millis++; }
         }
 
         // Обновить экран
@@ -127,6 +133,17 @@ void AVR::disassemble()
 uint8_t AVR::get(uint16_t addr)
 {
     uint8_t dv = sram[addr];
+
+    switch (addr) {
+
+        case 0x20: return cursor & 0xFF;
+        case 0x21: return cursor >> 8;
+        case 0x22: return millis & 255;
+        case 0x2C: return border_color;
+        case 0x2E: return vconfig;
+        case 0x2F: return 1;
+    }
+
     return dv;
 }
 
@@ -137,15 +154,20 @@ void AVR::put(uint16_t addr, uint8_t value)
 
     switch (addr)
     {
-        case 0x20: cursor_x = value; break;
-        case 0x21: cursor_y = value; break;
+        case 0x20: cursor = (cursor & 0xFF00) | (value); break;
+        case 0x21: cursor = (cursor & 0x00FF) | (value << 8); break;
         case 0x22:
 
-            video[cursor_x + cursor_y*256] = value & 15;
-            if (cursor_x++ == 255) cursor_y++;
+            video[cursor] = value & 15;
+
+            // Параметры инркемента
+            if (vconfig & 4) cursor += 0x0001;
+            if (vconfig & 8) cursor += 0x0100;
+
             break;
 
         case 0x2D: border_color = value & 15; break;
+        case 0x2E: vconfig      = value; break;
 
         // Запись во флаги
         case 0x5F: byte_to_flag(value);

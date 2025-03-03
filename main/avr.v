@@ -6,6 +6,7 @@ module avr
 (
     input               clock,
     input               reset_n,
+    input               ce,
     // Программная память
     output reg  [15:0]  pc,         // Программный счетчик
     input       [15:0]  ir,         // Инструкция из памяти
@@ -119,7 +120,7 @@ if (reset_n == 1'b0) begin
     tstate  <= 1'b0;
 end
 // Рабочее состояние
-else begin
+else if (ce) begin
     we     <= 1'b0;
     read   <= 1'b0; // Чтение из памяти
     reg_w  <= 1'b0;
@@ -644,7 +645,7 @@ else begin
 end
 // Запись в регистры
 always @(negedge clock)
-begin
+if (ce) begin
     // Запись в регистр
     if (reg_w) r[ reg_id ] <= alu_res;
     // Запись в SREG

@@ -23,6 +23,7 @@ int main()
 {
     loc(0, 0);
     border(0);
+    vconf(4);
 
     for (int y = -120; y < 120; y++)
     for (int x = -128; x < 128; x++) {

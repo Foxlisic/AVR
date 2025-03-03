@@ -76,8 +76,7 @@ protected:
     int x, y, _hs, _vs;
 
     uint32_t    tstates = 0;
-    uint8_t     cursor_x = 0,
-                cursor_y = 0;
+    uint16_t    cursor  = 0;
 
     // Отладчик
     char        ds_line[256];
@@ -86,6 +85,8 @@ protected:
     uint8_t     charmap[4096];
     uint32_t    dac[256];
     uint8_t     border_color;
+    uint8_t     vconfig;
+    uint32_t    millis;
 
     // Процессор
     int         compat = 0;

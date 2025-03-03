@@ -24,4 +24,4 @@ if ($len < 65536) {
 
 $hex[] = "END;\n";
 
-file_put_contents(__DIR__ . "/" . ($argv[2] ?? "de0/memprog.mif"), join("\n", $hex));
+file_put_contents(__DIR__ . "/../" . ($argv[2] ?? "de0/memprog.mif"), join("\n", $hex));

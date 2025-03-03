@@ -86,24 +86,78 @@ pll u0
     .m100   (clock_100)
 );
 
-// Центральный процессор -------------------------------------------------------
+// Контроллеры -----------------------------------------------------------------
 
 wire [15:0] address, pc, ir;
 wire [ 7:0] data_i, data_o;
 wire        we, read;
 reg         intr;
 reg  [ 2:0] vect;
+reg  [11:0] timet;
+reg  [15:0] millis;
+
+// Получение данных из памяти или из портов
+wire [7:0] cpu_i =
+    address == 16'h0020 ? video_c[ 7:0] :
+    address == 16'h0021 ? video_c[15:8] :
+    address == 16'h0022 ? millis[7:0] :
+    address == 16'h002B ? border :
+    address == 16'h002E ? vconfig :
+    address == 16'h002F ? {PS2_DAT, PS2_CLK} :
+        data_i;
+
+// Запись в память или порты
+always @(posedge clock_25)
+if (reset_n == 0 || RESET_N == 0) begin
+
+    border  <= 0;
+    video_c <= 0;
+    vconfig <= 8'b0000_0100;    // X++, APAGE=0, VPAGE=0
+
+end
+else begin
+
+    video_w <= 0;
+
+    // Счетчики 0.01 миллисекунд
+    timet <= timet + 1; if (timet == 249) begin timet <= 0; millis <= millis + 1; end
+
+    if (we)
+    case (address)
+
+        // Работа с видеопамятью
+        16'h0020: video_c[ 7:0] <= data_o;
+        16'h0021: video_c[15:8] <= data_o;
+        16'h0022: begin
+
+            video_ca <= video_c;
+            video_c  <= video_c + {/*Y++*/ vconfig[3], 7'b0, /*X++*/ vconfig[2]};
+            video_o  <= data_o[3:0];
+            video_w  <= 1;
+
+        end
+
+        // Запись бордера
+        16'h002D: border  <= data_o[3:0];
+        16'h002E: vconfig <= data_o;
+
+    endcase
+
+end
+
+// Центральный процессор -------------------------------------------------------
 
 avr AVR
 (
     .clock      (clock_25),
-    .reset_n    (reset_n),
+    .reset_n    (reset_n & RESET_N),
+    .ce         (1'b1),
     // Программная память
     .pc         (pc),
     .ir         (ir),
     // Оперативная память
     .address    (address),
-    .data_i     (data_i),
+    .data_i     (cpu_i),
     .data_o     (data_o),
     .we         (we),
     .read       (read),
@@ -119,6 +173,7 @@ wire [ 3:0] video_i;
 reg  [15:0] video_c, video_ca;
 reg  [ 3:0] video_o, border;
 reg         video_w;
+reg  [ 7:0] vconfig;
 
 video VIDEO
 (
@@ -132,40 +187,6 @@ video VIDEO
     .VI         (video_i),
     .BRD        (border),
 );
-
-// Контроллеры -----------------------------------------------------------------
-
-always @(posedge clock_25)
-if (reset_n == 0 || RESET_N == 0) begin
-
-    border  <= 7;
-    video_c <= 0;
-
-end
-else begin
-
-    video_w <= 0;
-
-    if (we)
-    case (address)
-
-    // Работа с видеопамятью
-    16'h0020: video_c[ 7:0] <= data_o;
-    16'h0021: video_c[15:8] <= data_o;
-    16'h0022: begin
-
-        video_ca <= video_c;
-        video_c  <= video_c + 1;
-        video_o  <= data_o[3:0];
-        video_w  <= 1;
-
-    end
-
-    // Запись бордера
-    16'h002D: border <= data_o[3:0];
-    endcase
-
-end
 
 // Блоки памяти ----------------------------------------------------------------
 
