@@ -16,7 +16,7 @@ module keyboard
     output  reg [7:0]   kbd,            // Данные от клавиатуры
     output  reg         hit,            // =1 Одиночный хит на получение данных от контроллера
     output  reg         err,            // =1 Ошибка обработки или таймаут
-    output              idle,           // =1 Устройство готово к приему команды cmd=1, dat
+    output              ready,          // =1 Устройство готово к приему команды cmd=1, dat
 
     output      [7:0]   tmp
 );
@@ -32,7 +32,7 @@ localparam
     RECEIVE     = 1,
     TRANSMIT    = 2;
 
-assign idle   = (CMD == 0);
+assign ready  = (CMD == 0);
 assign ps_clk = we_clk ? PS_CLK : 1'bz;
 assign ps_dat = we_dat ? PS_DAT : 1'bz;
 
@@ -169,10 +169,8 @@ else begin
 
                     end
 
-                    // Ожидаем ACK от клавиатуры
-                    CWAIT+31: we_dat <= 0;
-
                     // Ждать бита ACK от клавиатуры
+                    CWAIT+31: we_dat <= 0;
                     CWAIT+33: begin dm <= 0; t <= CWAIT + (rt == 2'b01 ? 34 : 33); end
 
                     // Через 10 мкс завершить отсылку и перейти к стадии приема ответа от клавиатуры

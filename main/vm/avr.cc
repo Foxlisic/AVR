@@ -6,8 +6,14 @@
 #include "avr_assign.cc"
 #include "avr_cpu.cc"
 
-int main(int argc, char** argv) {
+/**
+ * Параметры командой строки:
+ * -4 Использовать конфигурацию C4 Omdazz
+ * -d Вывод отладочной информации
+ */
 
+int main(int argc, char** argv)
+{
     AVR* avr = new AVR(argc, argv);
     return avr->main();
 }

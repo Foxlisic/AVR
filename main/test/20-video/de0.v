@@ -65,12 +65,16 @@ module de0
 // High-Impendance-State
 assign DRAM_DQ = 16'hzzzz;
 assign GPIO_0  = 36'hzzzzzzzz;
-//assign GPIO_1  = 36'hzzzzzzzz;
 
-assign GPIO_1 = {1'b0, PS2_CLK, PS2_DAT, tmp[0], 32'bz}; // err
+assign GPIO_1[33:0]  = 1'hz;
+assign GPIO_1[35] = 1'b0;
+assign GPIO_1[34] = 1'b1;
 
-// LED OFF
-reg [23:0] DAT;
+assign HEX1 = 7'b1111111;
+assign HEX2 = 7'b1111111;
+assign HEX3 = 7'b1111111;
+assign HEX4 = 7'b1111111;
+assign HEX5 = 7'b1111111;
 
 /*
 hex7 A1(.i(DAT[23:20]), .o(HEX5));
@@ -82,70 +86,27 @@ hex7 A6(.i(DAT[ 3: 0]), .o(HEX0));
 */
 
 // ---------------------------------------------------------------------
-wire clock_25, clock_100, reset_n;
-
-assign LEDR[0] = err;
-
-wire        err;
-wire [ 7:0] kbd;
-reg  [ 7:0] dat;
-reg         cmd;
+wire clock_25, clock_100, clock_6, reset_n;
 
 pll u0
 (
     .clkin  (CLOCK_50),
     .locked (reset_n),
     .m25    (clock_25),
+    .m6     (clock_6),
     .m100   (clock_100)
 );
 
-keyboard KB
+video VIDEO
 (
-    .clock      (clock_25),
-    .reset_n    (reset_n),
-    .ps_clk     (PS2_CLK),
-    .ps_dat     (PS2_DAT),
-    // ----------------
-    .kbd        (kbd),
-    .hit        (hit),
-    // ----------------
-    .cmd        (cmd),
-    .dat        (dat),
-    .err        (err),
-    .ready      (ready),
-    // ----------------
-    .tmp        (tmp)
+    .CLK    (clock_25),
+    .R      (VGA_R),
+    .G      (VGA_G),
+    .B      (VGA_B),
+    .HS     (VGA_HS),
+    .VS     (VGA_VS),
 );
-
-wire        ready;
-wire [7:0]  tmp;
-reg  [15:0] cm;
-
-always @(posedge clock_25)
-if (reset_n && RESET_N)
-begin
-
-    cmd <= 0;
-    cm  <= cm + 1;
-
-    case (cm)
-
-    0: cm <= KEY[0] == 0 ? 1 : 0;
-
-    1: if (ready) begin cmd <= 1; dat <= 8'hF4; end else cm <= 1; // ENABLE SCAN
-    // 1: if (ready) begin cmd <= 1; dat <= 8'hF2; end else cm <= 1; // IDENTIFY
-    // 1: if (ready) begin cmd <= 1; dat <= 8'hED; end else cm <= 1; // SET LEDS
-    // 3: if (ready) begin cmd <= 1; dat <= 8'h03; end else cm <= 3;
-
-    65535: cm <= 65535;
-    endcase
-    if (hit) DAT <= {DAT[23:0], kbd};
-
-    // DAT[23:16] <= cm;
-    // DAT[15:8] <= tmp;
-
-end else cm <= 0;
 
 endmodule
 
-`include "../../keyboard.v"
+`include "video.v"

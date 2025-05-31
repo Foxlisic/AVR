@@ -7,11 +7,12 @@ AVR::AVR(int argc, char** argv)
 
     scale        = 4;               // Удвоение пикселей
     width        = 320;             // Ширина экрана
-    height       = 240;             // Высота экрана
+    height       = 200;             // Высота экрана
     frame_length = (1000/60);       // 60 FPS
     border_color = 0;
     cursor       = 0;
     vconfig      = 2;
+    device       = CYCLONE_V;
 
     int i = 1;
     FILE* fp;
@@ -33,14 +34,17 @@ AVR::AVR(int argc, char** argv)
 
                 // Активация дебаггера
                 case 'd': ds_enable = 1; break;
+
+                // Циклон-4
+                case '4': device = CYCLONE_IV; break;
             }
 
         } else {
 
             fp = fopen(argv[i], "rb");
             if (fp) {
-                fread(program, 2, 65536, fp); // Ты кот?
-                fclose(fp); // А если найду?
+                fread(program, 2, 65536, fp);   // Ты кот?
+                fclose(fp);                     // А если найду?
             } else {
                 printf("Program has not been are symbol table, please encode sync tables and back again in this place of MZ DOS application\n"); exit(1);
             }
@@ -70,7 +74,7 @@ int AVR::main()
 
     for (;;) {
 
-        int ts, ms = 0, cc = 0, ips = 0, target = (25000000/60);
+        int ts, ms = 0, cc = 0, ips = 0, target = (25000000 / 60);
         Uint32 ticks = SDL_GetTicks();
 
         // Прием событий
@@ -84,8 +88,8 @@ int AVR::main()
         }
 
         // Выполнение инструкции 25 Мгц / 60 кадров
-        while (cc < target) {
-
+        while (cc < target)
+        {
             disassemble();
 
             ts  = step();
@@ -95,7 +99,7 @@ int AVR::main()
             tstates += ts;
             ips++;
 
-            if (ms > 249) { ms = 0; millis++; }
+            if (ms > 25000) { ms = 0; millis = SDL_GetTicks() & 255; }
         }
 
         // Обновить экран
@@ -158,6 +162,7 @@ void AVR::put(uint16_t addr, uint8_t value)
         case 0x21: cursor = (cursor & 0x00FF) | (value << 8); break;
         case 0x22:
 
+            // Количество цветов всего 16
             video[cursor] = value & 15;
 
             // Параметры инркемента
@@ -176,12 +181,48 @@ void AVR::put(uint16_t addr, uint8_t value)
 
 void AVR::update_screen()
 {
-    for (int y = 0; y < 240; y++)
-    for (int x = 0; x < 320; x++) {
+    switch (device)
+    {
+        // Текстовый видеорежим
+        // Расположение видеопамяти B000 (4kb VRAM) C000 (4k FONT)
+        case CYCLONE_IV:
 
-        if (x >= 32 && x < 32+256)
-             pset(x, y, dac[video[(x-32) + y*256]]);
-        else pset(x, y, dac[border_color]);
+            flash_cnt = (flash_cnt + 1) % 15;
+            if (flash_cnt == 0) flash = !flash;
+
+            for (int i = 0; i < 25; i++)
+            for (int j = 0; j < 80; j++) {
+
+                int     a = 0xB000 + 2*j + 160*i;
+                uint8_t b = sram[a],
+                        c = sram[a + 1];
+
+                for (int y = 0; y < 16; y++) {
+
+                    int d = sram[0xC000 + 16*b + y];
+                    for (int x = 0; x < 8; x++) {
+
+                        int mask = d & (0x80 >> x);
+                        int cl = mask || (cursor_x == j && cursor_y == i && flash && y >= 14) ? c & 15 : c >> 4;
+
+                        pset(j*8 + x, i*16 + y, dac[cl]);
+                    }
+                }
+            }
+
+            break;
+
+        default:
+
+            for (int y = 0; y < height; y++)
+            for (int x = 0; x < 320; x++) {
+
+                if (x >= 32 && x < 32+256 && y >= 4 && y < 196)
+                     pset(x, y, dac[ video[(x-32) + (y-4)*256] ]);
+                else pset(x, y, dac[ border_color ]);
+            }
+
+            break;
     }
 }
 

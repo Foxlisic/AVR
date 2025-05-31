@@ -12,7 +12,7 @@ int mandel(float cx, float cy)
         y = ty;
 
         if (x*x + y*y >= 4) {
-            return i;
+            return i & 7;
         }
     }
 
@@ -25,9 +25,9 @@ int main()
     border(0);
     vconf(4);
 
-    for (int y = -120; y < 120; y++)
+    for (int y = -96;  y < 96; y++)
     for (int x = -128; x < 128; x++) {
-        padd(mandel((float)x/64, (float)y/64));
+        point(mandel((float)x/64, (float)y/64));
     }
 
     return 0;

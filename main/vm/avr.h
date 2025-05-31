@@ -1,11 +1,12 @@
 #include <SDL2/SDL.h>
 
-struct CPUFlags {
+struct CPUFlags
+{
     int c, z, n, v, s, h, t, i;
 };
 
-enum AVROpcodes {
-
+enum AVROpcodes
+{
     UNDEFINED = 0,
     CPC,    SBC,    ADD,    CP,     SUB,    ADC,    AND,    EOR,    OR,
     CPI,    SBCI,   SUBI,   ORI,    ANDI,   ADIW,   SBIW,
@@ -19,6 +20,12 @@ enum AVROpcodes {
     STX,    STX_,   ST_X,   STY_,   ST_Y,   STYQ,   STZ_,   ST_Z,   STZQ,
     LPM0Z,  LPMRZ,  LPMRZ_, ELPM0Z, ELPMRZ, ELPMRZ_, SPM,   SPM2,
     SLEEP,  WDR,    BREAK,  NOP,    IN,     OUT,    PUSH,   POP,    DES
+};
+
+enum Devices
+{
+    CYCLONE_V  = 0,
+    CYCLONE_IV = 1,
 };
 
 // Палитра для DOS 320x200 MODE 13h
@@ -75,8 +82,11 @@ protected:
     int width, height, scale, frame_length;
     int x, y, _hs, _vs;
 
+    uint8_t     device  = 0;
     uint32_t    tstates = 0;
     uint16_t    cursor  = 0;
+    uint8_t     flash_cnt = 0, flash    = 0;
+    uint8_t     cursor_x  = 0, cursor_y = 0;
 
     // Отладчик
     char        ds_line[256];
