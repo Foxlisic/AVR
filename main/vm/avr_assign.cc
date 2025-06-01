@@ -30,7 +30,6 @@ void AVR::assign()
 
     for (i = 0; i < 65536; i++) { map[i] = UNDEFINED; }
 
-
     // Арифметические на 2 регистра
     assign_mask("000001rdddddrrrr", CPC);
     assign_mask("000010rdddddrrrr", SBC);
@@ -143,6 +142,12 @@ void AVR::assign()
     assign_mask("1001001ddddd1111", PUSH);
     assign_mask("1001000ddddd1111", POP);
     assign_mask("10010100KKKK1011", DES);
+
+    // Расширенные
+    assign_mask("100111rdddddrrrr", MUL);
+    assign_mask("00000010ddddrrrr", MULS);
+    assign_mask("000000110ddd0rrr", MULSU);
+    assign_mask("000000110ddd1rrr", FMUL);
 
     // Генератор avr_assign.h
     // for (int i = 0; i < 65536; i++) printf("0x%02X,%s", map[i], (i % 256) == 255 ? "\n" : "");

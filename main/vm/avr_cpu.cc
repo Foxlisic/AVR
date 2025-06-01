@@ -23,6 +23,9 @@ void AVR::reset()
 
     // Загрузка палитры
     for (int i = 0; i < 256; i++) dac[i] = DOS13[i];
+
+    // Если надо будет обновить assignmap
+    // assign(); for (int i = 0; i < 65536; i++) { printf("0x%02X,", map[i]); if ((i & 255) == 255) printf("\n"); };
 }
 
 // Байт во флаги
@@ -543,9 +546,65 @@ int AVR::step()
             cycles = 2;
             break;
 
+        // --------------------------------
+        // Аппаратное умножение
+        // --------------------------------
+
+        case MUL:
+
+            d = get_rd();
+            r = get_rr();
+            v = (r * d) & 0xffff;
+            put16(0, v);
+
+            flag.c = v >> 15;
+            flag.z = v == 0;
+            flag_to_byte();
+            break;
+
+        case MULS:
+
+            d = sram[ 0x10 | ((opcode & 0xf0) >> 4) ];
+            r = sram[ 0x10 |  (opcode & 0x0f) ];
+            d = (d & 0x80 ? 0xff00 : 0) | d;
+            r = (r & 0x80 ? 0xff00 : 0) | r;
+            v = (r * d) & 0xffff;
+            put16(0, v);
+
+            flag.c = v >> 15;
+            flag.z = v == 0;
+            flag_to_byte();
+            break;
+
+        case MULSU:
+
+            d = sram[ 0x10 | ((opcode & 0x70)>>4) ];
+            r = sram[ 0x10 |  (opcode & 0x07) ];
+            d = (d & 0x80 ? 0xff00 : 0) | d; // Перевод в знаковый
+            v = (r * d) & 0xffff;
+            put16(0, v);
+
+            flag.c = v >> 15;
+            flag.z = v == 0;
+            flag_to_byte();
+            break;
+
+        // Аналогично MUL, но со сдвигом влево
+        case FMUL:
+
+            d = sram[ 0x10 | ((opcode & 0x70)>>4) ];
+            r = sram[ 0x10 |  (opcode & 0x07) ];
+            v = ((r * d) << 1) & 0xffff;
+            put16(0, v);
+
+            flag.c = v >> 15;
+            flag.z = v == 0;
+            flag_to_byte();
+            break;
+
         default:
 
-            printf("Неизвестная инструкция $%04x в pc=$%04x\n", opcode, org);
+            printf("Неизвестная инструкция $%04x в pc=$%04x\n", opcode, 2*org);
             exit(1);
     }
 

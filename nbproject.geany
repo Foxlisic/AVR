@@ -28,10 +28,11 @@ long_line_behaviour=1
 long_line_column=80
 
 [files]
-current_page=2
-FILE_NAME_0=336;C++;0;EUTF-8;0;1;0;%2Fhome%2Ffox%2Fdev%2F01_avr%2Fmain%2Fvm%2Favr.cc;0;4
-FILE_NAME_1=4242;C++;0;EUTF-8;0;1;0;%2Fhome%2Ffox%2Fdev%2F01_avr%2Fmain%2Fvm%2Favr.cpp;0;4
-FILE_NAME_2=4395;C++;0;EUTF-8;0;1;0;%2Fhome%2Ffox%2Fdev%2F01_avr%2Fmain%2Fvm%2Favr.h;0;4
+current_page=0
+FILE_NAME_0=4601;C++;0;EUTF-8;0;1;0;%2Fhome%2Ffox%2Fdev%2F01_avr%2Fmain%2Fc4%2Fapp%2F01_xo%2Fmain.cpp;0;4
+FILE_NAME_1=771;C++;0;EUTF-8;0;1;0;%2Fhome%2Ffox%2Fdev%2F01_avr%2Fmain%2Finclude%2Fc4io.h;0;4
+FILE_NAME_2=1411;C++;0;EUTF-8;0;1;0;%2Fhome%2Ffox%2Fdev%2F01_avr%2Fmain%2Finclude%2Favrio.h;0;4
+FILE_NAME_3=0;None;0;EUTF-8;0;1;0;%2Fhome%2Ffox%2Fdev%2F01_avr%2Fmain%2Fc4%2Fapp%2F01_xo%2Fmem.map;0;4
 
 [VTE]
 last_dir=/home/fox
