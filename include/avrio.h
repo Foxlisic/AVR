@@ -5,7 +5,7 @@
 #include <avr/pgmspace.h>
 #define LPM(x) pgm_read_byte(&x)
 #define LPW(x) pgm_read_word(&x)
-#define STRING(x,y) const char x[] PROGMEM = y
+#define STRING(x,y) extern const byte x[] PROGMEM; const byte x[] = y;
 
 // Ссылка на пустой адрес
 #define NULL    ((void*)0)
@@ -27,10 +27,10 @@ inline byte inp(int port) { return ((volatile byte*)0x20)[port]; }
 inline void outp(int port, unsigned char val) { ((volatile unsigned char*)0x20)[port] = val; }
 
 // Графические манипуляции
-inline void cx(byte a)                      { outp(0x0C, a); }
-inline void cy(byte a)                      { outp(0x0E, a); }
-inline void loc(byte x, byte y)             { cx(x); cy(y); }
-inline void pset(byte x, byte y, byte v)    { loc(x,y); outp(0, v); }
+inline void cx(int a)                       { outp(0x0C, a); outp(0x0D, a >> 8); }
+inline void cy(int a)                       { outp(0x0E, a); outp(0x0F, a >> 8); }
+inline void loc(int x, int y)               { cx(x); cy(y); }
+inline void pset(int x, int y, byte v)      { loc(x,y); outp(0, v); }
 inline void point(byte v)                   { outp(0, v); }
 inline void vconf(byte v)                   { outp(0x02, v); }
 inline void border(byte v)                  { outp(0x01, v); }
