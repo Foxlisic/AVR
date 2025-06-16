@@ -1,6 +1,6 @@
 DEVICE  = atmega103
 CLOCK   = 25000000
-COMPILE = avr-gcc -I../../include -Wall -Wno-unused-but-set-variable -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -fdata-sections -Wl,--gc-sections,--defsym=__stack=0x80ffff,--defsym=__heap_end=0x80ffff
+COMPILE = avr-gcc -I../../include -Wall -Wno-unused-but-set-variable -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -fdata-sections -Wl,--gc-sections,--defsym=__stack=0x807fff,--defsym=__heap_end=0x807fff
 VM		= ../../vm/avr
 BM		= php ../../utils/avr2mif.php
 
