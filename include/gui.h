@@ -4,13 +4,18 @@ class GUI
 {
 public:
 
+    int mouse_x = 0,
+        mouse_y = 0;
+
     // Обчистить экран
-    void cls(byte color)
+    void cls(byte color, byte back = 255)
     {
+        back = back == 255 ? color : back;
+
         loc(0, 0);
         for (int i = 0; i < 400; i++)
         for (int j = 0; j < 640; j++) {
-            point(color);
+            point((i ^ j) & 1 ? color : back);
         }
     }
 
@@ -28,9 +33,8 @@ public:
         for (int y = y1; y <= y2; y++)
         {
             loc(x1, y);
-            for (int x = x1; x <= x2; x++) point(color);
+            for (int x = x1; x <= x2; x++) { point(color); }
         }
-
     }
 
     // Печать символа
@@ -100,6 +104,17 @@ public:
         }
 
         return 0;
+    }
+
+    void button(int x1, int y1, int x2, int y2, byte press = 0)
+    {
+        block(x1+1, y1+1, x2-1, y2-1, 7);
+        block(x1,   y1,   x1,   y2,   15);
+        block(x1+1, y1,   x2,   y1,   15);
+        block(x2,   y1,   x2,   y2,   0);
+        block(x1,   y2,   x2-1, y2,   0);
+        block(x1+1, y2-1, x2-1, y2-1, 8);
+        block(x2-1, y1+1, x2-1, y2-1, 8);
     }
 
 } gui;
