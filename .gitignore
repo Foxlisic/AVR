@@ -6,6 +6,7 @@
 *.bin
 *.lst
 *.geany
+*.mif
 obj_dir
 avr
 avr.log
