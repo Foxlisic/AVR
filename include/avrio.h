@@ -10,6 +10,7 @@
 // Ссылка на пустой адрес
 #define NULL    ((void*)0)
 #define brk     asm volatile("sleep"); // break
+#define stop    for (;;);
 
 // Базовые типы данных
 #define byte        unsigned char
@@ -20,7 +21,7 @@
 
 // Указатель на память
 #define heap(x,y)     volatile byte* x = (byte*)y;
-#define heapvm        volatile byte* vm = (byte*)0xB000;
+#define heapvm        volatile byte* vm = (byte*)0x8000;
 
 // Чтение и запись в порт
 inline byte inp(int port) { return ((volatile byte*)0x20)[port]; }

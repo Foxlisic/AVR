@@ -8,7 +8,7 @@ all:
 	avr-objcopy -j .text -j .data -O binary main.elf main.bin
 	avr-objdump -S main.elf > main.lst
 	avr-size -C --mcu=$(DEVICE) main.elf > mem.map
-	$(BM) main.bin ../../m32.mif
+	$(BM) main.bin ../../m32.mif 16
 	rm main.elf main.bin
 
 clean:

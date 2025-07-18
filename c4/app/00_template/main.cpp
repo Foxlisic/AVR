@@ -1,11 +1,13 @@
 #include <avrio.h>
+#include <c4.h>
+
+STRING(s1," Minus Odin ");
 
 int main()
 {
-    heapvm;
-    border(1);
-
-    for (int i = 0; i < 6144+768; i++) vm[i] = i;
-
-    for (;;);
+    c4.cls(0x07);
+    c4.loc(11,12);
+    c4.color(0x17);
+    c4.pstr(s1);
+    stop;
 }

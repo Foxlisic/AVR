@@ -13,7 +13,7 @@ for ($i = 0; $i < strlen($temp); $i += 2) {
 }
 
 $len  = count($data);
-$size = 65536;
+$size = ($argv[3] ?? 64) * 1024;
 
 $out = [
     "WIDTH=16;",
@@ -49,7 +49,7 @@ $pb = join("\n", $out);
 
 // Сохранить информацию
 if (isset($argv[2])) {
-    file_put_contents($argv[2], $pb); 
-} else { 
+    file_put_contents($argv[2], $pb);
+} else {
     echo $pb;
 }

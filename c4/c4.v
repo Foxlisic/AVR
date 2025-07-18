@@ -61,7 +61,7 @@ reg  [ 2:0] vga_b;
 // Роутер памяти
 // -----------------------------------------------------------------------------
 wire pt = a <= 16'h005F;
-wire w8 = a >= 16'hB000 && a < 16'hD000; // 8K  VRAM
+wire w8 = a >= 16'h8000 && a < 16'hA000; // 8K  VRAM
 wire w4 = a >= 16'h0000 && a < 16'h1000; // 4Kb CRAM
 wire w2 = a >= 16'h1000 && a < 16'h1800; // 2Kb Stack
 
@@ -103,6 +103,7 @@ io IO
     .a          (a),
     .o          (o),
     .p          (p),
+    .r          (r),
     .w          (w),
     .p_border   (vga_b),
     .p_kdone    (kdone),
@@ -148,3 +149,4 @@ endmodule
 
 `include "../avr.v"
 `include "../kb.v"
+`include "../io.v"
