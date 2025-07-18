@@ -18,6 +18,12 @@ public:
         for (int i = 0; i < 768;  i++) vm[i+6144] = cl;
     }
 
+    // Цвет бордера
+    inline void border(byte c)
+    {
+        outp(0x00, c);
+    }
+
     // Цветовая гамма
     inline void color(byte c)
     {

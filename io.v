@@ -13,8 +13,12 @@ module io
 
 // Сохраненные значения
 // -----------------------------------------------------------------------------
+
+// Клавиатура
 reg         r_ascii;
 reg [ 7:0]  i_ascii;
+
+// Таймер
 reg [17:0]  t_counter;
 reg [ 7:0]  i_timer;
 
@@ -33,16 +37,16 @@ endcase
 always @(posedge clock)
 begin
 
-    // Запись в порт
-    if (w)
-    case (a)
-    16'h21: p_border <= o[2:0];
-    endcase
-
     // Чтение из порта сбрасывает бит
     if (r)
     case (a)
     16'h20: r_ascii <= 0;
+    endcase
+
+    // Запись в порт
+    if (w)
+    case (a)
+    16'h20: p_border <= o[2:0];
     endcase
 
     // Клавиша принята с клавиатуры
