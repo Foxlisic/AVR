@@ -31,9 +31,9 @@ inline void cx(int a)                       { outp(0x0C, a); outp(0x0D, a >> 8);
 inline void cy(int a)                       { outp(0x0E, a); outp(0x0F, a >> 8); }
 inline void loc(int x, int y)               { cx(x); cy(y); }
 inline void pset(int x, int y, byte v)      { loc(x,y); outp(0, v); }
-inline void point(byte v)                   { outp(0, v); }
-inline void vconf(byte v)                   { outp(0x02, v); }
+inline void point(byte v)                   { outp(0x00, v); }
 inline void border(byte v)                  { outp(0x01, v); }
+inline void vconf(byte v)                   { outp(0x02, v); }
 inline byte millis()                        { return inp(0); }
 
 enum KBASCII
