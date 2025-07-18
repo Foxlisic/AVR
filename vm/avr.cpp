@@ -111,7 +111,7 @@ int AVR::main()
             tstates += ts;
             ips++;
 
-            if (ms > 25000) { ms = 0; millis = SDL_GetTicks() & 255; }
+            if (ms > 250000) { ms = 0; millis = SDL_GetTicks() & 255; }
         }
 
         // Обновить экран
@@ -152,16 +152,9 @@ uint8_t AVR::get(uint16_t addr)
 
     switch (addr)
     {
-        case 0x20: return 0;
-        case 0x21: return vconfig;
-        case 0x22: return border_color;
-        case 0x2C: return cursor_x;
-        case 0x2D: return cursor_x >> 8;
-        case 0x2E: return cursor_y;
-        case 0x2F: return cursor_y >> 8;
-        case 0x30: return key_code;
-        case 0x31: dv = key_press; key_press = 0; return dv;
-        case 0x32: return millis & 255;
+        case 0x20: return key_code;
+        case 0x21: return millis;
+        case 0x22: dv = key_press; key_press = 0; return dv;
     }
 
     return dv;
@@ -174,82 +167,15 @@ void AVR::put(uint16_t addr, uint8_t value)
 
     switch (addr)
     {
-        // Рисовать точку на экране
-        case 0x20:
-
-            // Количество цветов всего 16
-            video[cursor_x + cursor_y*640] = value & 15;
-
-            // Параметры инкремента
-            cursor_x += (vconfig & 1);
-
-            if (cursor_x >= 640) {
-                cursor_x = 0;
-                cursor_y++;
-            }
-
-            cursor_y = (cursor_y + (vconfig & 2 ? 1 : 0)) % 400;
-
-            break;
-
-        case 0x21: border_color = value & 15; break;
-        case 0x22: vconfig      = value; break;
-
-        // Указатель в память точки рисования
-        case 0x2C: cursor_x = (cursor_x & 0xFF00) |  value; break;
-        case 0x2D: cursor_x = (cursor_x & 0x00FF) | (value << 8); break;
-        case 0x2E: cursor_y = (cursor_y & 0xFF00) |  value; break;
-        case 0x2F: cursor_y = (cursor_y & 0x00FF) | (value << 8); break;
-
-        // Запись во флаги
+        case 0x20: border_color = value & 7; break;
         case 0x5F: byte_to_flag(value);
     }
 }
 
+// Разные виды экрана в зависимости от видеорежимов
 void AVR::update_screen()
 {
-    switch (device)
-    {
-        // Текстовый видеорежим
-        // Расположение видеопамяти B000 (4kb VRAM) C000 (4k FONT)
-        case CYCLONE_IV: {
-
-            flash_cnt = (flash_cnt + 1) % 15;
-            if (flash_cnt == 0) flash = !flash;
-
-            for (int i = 0; i < 25; i++)
-            for (int j = 0; j < 80; j++) {
-
-                int     a = 0xB000 + 2*j + 160*i;
-                uint8_t b = sram[a],
-                        c = sram[a + 1];
-
-                for (int y = 0; y < 16; y++) {
-
-                    int d = sram[0xC000 + 16*b + y];
-                    for (int x = 0; x < 8; x++) {
-
-                        int mask = d & (0x80 >> x);
-                        int cl = mask || (cursor_x == j && cursor_y == i && flash && y >= 14) ? c & 15 : c >> 4;
-
-                        pset(j*8 + x, i*16 + y, dac[cl]);
-                    }
-                }
-            }
-
-            break;
-        }
-
-        default: {
-
-            for (int y = 0; y < 400; y++)
-            for (int x = 0; x < 640; x++) {
-                pset(x, y, dac[video[x + y*640]]);
-            }
-
-            break;
-        }
-    }
+    // ..
 }
 
 // Убрать окно из памяти

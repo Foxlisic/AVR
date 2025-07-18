@@ -1,4 +1,4 @@
-DEVICE  = atmega103
+DEVICE  = atmega328p
 CLOCK   = 25000000
 DIRC    = ../../..
 COMPILE = avr-gcc -I$(DIRC)/include -Wall -Wno-unused-but-set-variable -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -fdata-sections -Wl,--gc-sections,--defsym=__stack=0x80ffff,--defsym=__heap_end=0x80ffff
@@ -11,7 +11,7 @@ all:
 	avr-objdump -S main.elf > main.lst
 	avr-size -C --mcu=$(DEVICE) main.elf > mem.map
 	rm main.elf
-	$(BM) main.bin ../../p64.mif 64
+	$(BM) main.bin ../../p32.mif 16
 	$(VM) main.bin > avr.log
 
 clean:
