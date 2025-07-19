@@ -75,15 +75,112 @@ assign HEX3 = 7'b1111111;
 assign HEX4 = 7'b1111111;
 assign HEX5 = 7'b1111111;
 
+// Провода
 // ---------------------------------------------------------------------
-wire clock_25, clock_100, reset_n;
+wire        clock_25, clock_100, reset_n;
+// Процессор
+wire [15:0] a, pc, ir;
+wire [ 7:0] o, p;
+wire [ 2:0] vect;
+wire        w, r;
+wire        intr;
+wire [ 7:0] i8;
+wire [ 7:0] i = pt ? p : i8;
+// Клавиатура
+wire        hit, kdone;
+wire [ 7:0] kbd, ascii;
+// Видеоадаптер
+wire [12:0] vga_a;
+wire [ 7:0] vga_i;
+wire [ 2:0] vga_b;
+wire        vblank;
+// Роутер памяти
+wire pt = a <= 16'h005F;
 
+// Генератор частоты
+// ---------------------------------------------------------------------
 pll u0
 (
-    .clkin  (CLOCK_50),
-    .locked (reset_n),
-    .m25    (clock_25),
-    .m100   (clock_100)
+    .clkin      (CLOCK_50),
+    .locked     (reset_n),
+    .m25        (clock_25),
+    .m100       (clock_100)
 );
 
+// Процессор
+// -----------------------------------------------------------------------------
+avr AVR
+(
+    .clock      (clock_25),
+    .reset_n    (reset_n & RESET_N),
+    .ce         (1'b1),
+    // Программная память
+    .pc         (pc),
+    .ir         (ir),
+    // Оперативная память
+    .address    (a),
+    .data_i     (i),
+    .data_o     (o),
+    .we         (w),
+    .read       (r),
+    // Прерывание #0..7
+    .intr       (intr),
+    .vect       (vect)
+);
+
+// Видеоадаптер
+// ---------------------------------------------------------------------
+vga A1
+(
+    .clock      (clock_25),
+    .r          (VGA_R),
+    .g          (VGA_G),
+    .b          (VGA_B),
+    .hs         (VGA_HS),
+    .vs         (VGA_VS),
+    .a          (vga_a),
+    .i          (vga_i),
+    .border     (vga_b),
+    .vretrace   (vblank)
+);
+
+// Связь процессора с периферией
+// -----------------------------------------------------------------------------
+io IO
+(
+    .clock      (clock_25),
+    .a          (a),
+    .o          (o),
+    .p          (p),
+    .r          (r),
+    .w          (w),
+    .p_border   (vga_b),
+    .p_kdone    (kdone),
+    .p_ascii    (ascii)
+);
+
+// Клавиатура
+// ---------------------------------------------------------------------
+kb K1
+(
+    .clock      (clock_25),
+    .reset_n    (reset_n),
+    .ps_clk     (PS2_CLK),
+    .ps_dat     (PS2_DAT),
+    .hit        (hit),
+    .kbd        (kbd),
+    .kdone      (kdone),
+    .ascii      (ascii)
+);
+
+// Модули памяти
+// ---------------------------------------------------------------------
+
+p32 ROM(.clock(clock_100), .a(pc[13:0]), .q(ir));
+m64 RAM(.clock(clock_100), .a( a[15:0]), .q(i8), .d(o), .w(w), .ax({3'b100, vga_a[12:0]}), .qx(vga_i));
+
 endmodule
+
+`include "../avr.v"
+`include "../io.v"
+`include "../kb.v"
