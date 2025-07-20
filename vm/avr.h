@@ -23,12 +23,6 @@ enum AVROpcodes
     MUL,    MULS,   MULSU,  FMUL
 };
 
-enum Devices
-{
-    CYCLONE_V  = 0,
-    CYCLONE_IV = 1,
-};
-
 // Палитра для DOS 320x200 MODE 13h
 static const int DOS13[256] =
 {
@@ -102,7 +96,6 @@ protected:
     int width, height, scale, frame_length;
     int x, y, _hs, _vs;
 
-    uint8_t     device    = 0;
     uint32_t    tstates   = 0;
     uint16_t    cursor    = 0;
     uint16_t    cursor_x  = 0,
@@ -140,6 +133,7 @@ public:
     int         destroy();
     void        pset(int x, int y, Uint32 cl);
     void        update_screen();
+    void        update_border(int c);
     void        disassemble();
     int         keyboard_ascii(SDL_Event, int);
 

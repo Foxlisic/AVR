@@ -28,7 +28,7 @@ always @(*)
 case (a)
 16'h20:  p = i_ascii;           // ASCII код от клавы
 16'h21:  p = i_timer;           // Таймер (100 Гц)
-16'h22:  p = r_ascii;           // Статус кнопки
+16'h22:  p = r_ascii;           // Была получена кнопка? Сброс при чтении
 default: p = 8'h00;
 endcase
 
@@ -37,10 +37,10 @@ endcase
 always @(posedge clock)
 begin
 
-    // Чтение из порта сбрасывает бит
+    // Чтение из порта
     if (r)
     case (a)
-    16'h20: r_ascii <= 0;
+    16'h22: r_ascii <= 0;
     endcase
 
     // Запись в порт

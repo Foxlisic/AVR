@@ -13,7 +13,6 @@ AVR::AVR(int argc, char** argv)
     cursor_x     = 0;
     cursor_y     = 0;
     vconfig      = 1;
-    device       = CYCLONE_V;
     video        = (uint8_t*) malloc(640*400);
 
     int i = 1;
@@ -32,21 +31,9 @@ AVR::AVR(int argc, char** argv)
         // Опции
         if (argv[i][0] == '-') {
 
-            switch (argv[i][1]) {
-
-                // Активация дебаггера
-                case 'd': ds_enable = 1; break;
-
-                // Циклон-4: Только 80 на 25 строк
-                case '4':
-
-                    device = CYCLONE_IV;
-                    width  = 640;
-                    height = 400;
-                    scale  = 2;
-
-                    for (int i = 0; i < 4096; i++) sram[0xC000 + i] = charmap[i];
-                    break;
+            switch (argv[i][1])
+            {
+                case 'd': ds_enable = 1; break; // Активация дебаггера
             }
 
         } else {
@@ -82,6 +69,8 @@ int AVR::main()
     dstRect.w = scale * width;
     dstRect.h = scale * height;
 
+    update_border(0);
+
     for (;;)
     {
         int ts, ms = 0, cc = 0, ips = 0, target = (25000000 / 60);
@@ -111,7 +100,7 @@ int AVR::main()
             tstates += ts;
             ips++;
 
-            if (ms > 250000) { ms = 0; millis = SDL_GetTicks() & 255; }
+            if (ms > 250000) { ms = 0; millis = (millis + 1) & 255; }
         }
 
         // Обновить экран
@@ -167,19 +156,22 @@ void AVR::put(uint16_t addr, uint8_t value)
 
     switch (addr)
     {
-        case 0x20: border_color = value & 7; break;
+        case 0x20: update_border(value); break;
         case 0x5F: byte_to_flag(value);
     }
+}
+
+void AVR::update_border(int c)
+{
+    border_color = c & 7;
+    int b = DOS13[c & 7];
+    for (int y = 0;  y < 200;    y++) for (int x = 0; x < 32; x++) { pset(x, y, b); pset(x+32+256, y, b); }
+    for (int x = 32; x < 32+256; x++) for (int y = 0; y < 4;  y++) { pset(x, y, b); pset(x, y+4+192, b); }
 }
 
 // Разные виды экрана в зависимости от видеорежимов
 void AVR::update_screen()
 {
-    int b = DOS13[border_color];
-
-    for (int y = 0;  y < 200;    y++) for (int x = 0; x < 32; x++) { pset(x, y, b); pset(x+32+256, y, b); }
-    for (int x = 32; x < 32+256; x++) for (int y = 0; x < 4;  y++) { pset(x, y, b); pset(x, y+4+192, b); }
-
     for (int i = 0; i < 6144; i++)
     {
         int m = sram[0x8000 + i];

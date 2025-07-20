@@ -5,9 +5,9 @@ STRING(s1," Minus Odin ");
 
 int main()
 {
-    c4.cls(0x07);
-    c4.loc(11,12);
-    c4.color(0x17);
-    c4.pstr(s1);
+    cls(0x07);
+    loc(11,12);
+    color(0x17);
+    pstr(s1);
     stop;
 }
