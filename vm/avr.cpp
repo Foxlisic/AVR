@@ -1,3 +1,31 @@
+// Чтение из памяти
+uint8_t AVR::get(uint16_t addr)
+{
+    uint8_t dv = sram[addr];
+
+    switch (addr)
+    {
+        case 0x20: return key_code;
+        case 0x21: return millis;
+        case 0x22: dv = key_press; key_press = 0; return dv;
+    }
+
+    return dv;
+}
+
+// Сохранение в память
+void AVR::put(uint16_t addr, uint8_t value)
+{
+    sram[addr] = value;
+
+    switch (addr)
+    {
+        case 0x20: update_border(value); break;
+        case 0x21: vpage = value & 1; break;
+        case 0x5F: byte_to_flag(value);
+    }
+}
+
 AVR::AVR(int argc, char** argv)
 {
     x   = 0;
@@ -134,33 +162,6 @@ void AVR::disassemble()
     }
 }
 
-// Чтение из памяти
-uint8_t AVR::get(uint16_t addr)
-{
-    uint8_t dv = sram[addr];
-
-    switch (addr)
-    {
-        case 0x20: return key_code;
-        case 0x21: return millis;
-        case 0x22: dv = key_press; key_press = 0; return dv;
-    }
-
-    return dv;
-}
-
-// Сохранение в память
-void AVR::put(uint16_t addr, uint8_t value)
-{
-    sram[addr] = value;
-
-    switch (addr)
-    {
-        case 0x20: update_border(value); break;
-        case 0x5F: byte_to_flag(value);
-    }
-}
-
 void AVR::update_border(int c)
 {
     border_color = c & 7;
@@ -172,10 +173,11 @@ void AVR::update_border(int c)
 // Разные виды экрана в зависимости от видеорежимов
 void AVR::update_screen()
 {
+    int base = vpage ? 0xA000 : 0x8000;
     for (int i = 0; i < 6144; i++)
     {
-        int m = sram[0x8000 + i];
-        int c = sram[0x9800 + (i&31) + 32*(i>>8)];
+        int m = sram[base + i];
+        int c = sram[base + 0x1800 + (i&31) + 32*(i>>8)];
         int y = i >> 5;
         int x = (i & 31)*8;
 

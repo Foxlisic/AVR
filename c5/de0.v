@@ -94,6 +94,7 @@ wire [12:0] vga_a;
 wire [ 7:0] vga_i;
 wire [ 2:0] vga_b;
 wire        vblank;
+wire        vpage;
 // Роутер памяти
 wire pt = a <= 16'h005F;
 
@@ -154,6 +155,7 @@ io IO
     .p          (p),
     .r          (r),
     .w          (w),
+    .p_vpage    (vpage),
     .p_border   (vga_b),
     .p_kdone    (kdone),
     .p_ascii    (ascii)
@@ -177,7 +179,7 @@ kb K1
 // ---------------------------------------------------------------------
 
 p32 ROM(.clock(clock_100), .a(pc[13:0]), .q(ir));
-m64 RAM(.clock(clock_100), .a( a[15:0]), .q(i8), .d(o), .w(w), .ax({3'b100, vga_a[12:0]}), .qx(vga_i));
+m64 RAM(.clock(clock_100), .a( a[15:0]), .q(i8), .d(o), .w(w), .ax({2'b10, vpage, vga_a[12:0]}), .qx(vga_i));
 
 endmodule
 

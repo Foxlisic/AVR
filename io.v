@@ -5,6 +5,7 @@ module io
     input       [ 7:0]  o,
     input               r,
     input               w,
+    output reg          p_vpage,        // Видеостраница 0=$8000, 1=$A000
     output reg  [ 2:0]  p_border,
     input               p_kdone,
     input       [ 7:0]  p_ascii,
@@ -47,6 +48,7 @@ begin
     if (w)
     case (a)
     16'h20: p_border <= o[2:0];
+    16'h21: p_vpage  <= o[0];
     endcase
 
     // Клавиша принята с клавиатуры

@@ -114,7 +114,7 @@ protected:
     uint32_t    millis;
 
     // Процессор
-    int         compat = 0;
+    int         vpage = 0;
     int         instr_counter, cpu_halt, cycles;
     uint16_t    pc = 0;
     uint16_t    pctop = 0xFFFF;
