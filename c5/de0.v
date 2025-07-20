@@ -86,8 +86,6 @@ wire [ 7:0] o, p;
 wire [ 2:0] vect;
 wire        w, r;
 wire        intr;
-wire [ 7:0] i8;
-wire [ 7:0] i = pt ? p : i8;
 // Клавиатура
 wire        hit, kdone;
 wire [ 7:0] kbd, ascii;
@@ -105,7 +103,10 @@ wire [ 8:0] sd_a;
 wire [ 7:0] sd_i, sd_o;
 wire        sd_w, sd_rw, sd_busy, sd_done, sd_command;
 // Роутер памяти
-wire pt = a <= 16'h005F;
+wire        m_sd = a >= 16'hFC00;
+wire        m_pt = a <= 16'h005F;
+wire [ 7:0] i8;
+wire [ 7:0] i = m_pt ? p : (m_sd ? s8 : i8);
 
 // Генератор частоты
 // -----------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 DEVICE  = atmega328p
 CLOCK   = 25000000
 DIRC    = ../../..
-COMPILE = avr-gcc -I$(DIRC)/include -Wall -Wno-unused-but-set-variable -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -fdata-sections -Wl,--gc-sections,--defsym=__stack=0x80ffff,--defsym=__heap_end=0x80ffff
+COMPILE = avr-gcc -I$(DIRC)/include -Wall -Wno-unused-but-set-variable -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -fdata-sections -Wl,--gc-sections,--defsym=__stack=0x80fbff,--defsym=__heap_end=0x80fbff
 VM      = $(DIRC)/vm/avr
 BM      = php $(DIRC)/utils/avr2mif.php
 
