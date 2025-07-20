@@ -36,6 +36,9 @@ reg [ 7:0]  i_timer;
 // Видео
 reg         r_vblank;
 
+// Есть результат от SD
+reg         r_done;
+
 // Чтение из порта
 // -----------------------------------------------------------------------------
 always @(*)
@@ -44,6 +47,7 @@ case (a)
 16'h21:  p = i_timer;           // Таймер (100 Гц)
 16'h22:  p = r_ascii;           // Была получена кнопка? Сброс при чтении
 16'h23:  p = r_vblank;          // Получен VBLank
+16'h24:  p = {sd_busy, r_done, sd_card, sd_error}; // Статус карточки
 default: p = 8'h00;
 endcase
 
@@ -52,11 +56,14 @@ endcase
 always @(posedge clock)
 begin
 
+    sd_command <= 0;
+
     // Чтение из порта
     if (r)
     case (a)
     16'h22: r_ascii  <= 0;
     16'h23: r_vblank <= 0;
+    16'h24: r_done   <= 0;
     endcase
 
     // Запись в порт
@@ -68,6 +75,7 @@ begin
     16'h23: sd_lba[15:8]  <= o;
     16'h24: sd_lba[23:16] <= o;
     16'h25: sd_lba[31:24] <= o;
+    18'h26: begin sd_command <= 1; sd_rw <= o[0]; end
     endcase
 
     // Пришел сигнал об окончании кадра
@@ -75,6 +83,9 @@ begin
 
     // Клавиша принята с клавиатуры
     if (p_kdone) begin i_ascii <= p_ascii; r_ascii <= 1; end
+
+    // Пришел сигнал DONE
+    if (sd_done) begin r_done <= 1; end
 
     // Счетчик 100 Гц
     if (t_counter == 249999)
