@@ -1,5 +1,8 @@
 #include "zxfont.h"
 
+// В зависимости от страницы будет писать в видео память
+#define heapvp heap(vm, (c4._vpage ? 0xA000 : 0x8000))
+
 // Хранение данных в памяти
 // =============================================================================
 
@@ -8,6 +11,7 @@ class C4
 public:
 
     byte _color, _locx, _locy;
+    byte _vpage = 0;
 
 } c4;
 
@@ -36,7 +40,7 @@ inline void loc(byte x, byte y)
 // Вывести символ на экране
 void pchar(byte x, byte y, char a)
 {
-    heapvm;
+    heapvp;
     int hl = (y << 8) + x;
     int de = 8*(a - 0x20);
     for (int i = 0; i < 8; i++) {
@@ -80,7 +84,8 @@ byte getch()
 // Очистить экран и установить цвет борделя
 void cls(byte cl = 0x07)
 {
-    heapvm;
+    heapvp;
+
     border(cl >> 4);
     loc(0, 0);
     color(cl);

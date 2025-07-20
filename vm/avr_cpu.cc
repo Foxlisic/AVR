@@ -501,38 +501,7 @@ int AVR::step()
         case ELPMRZ:  put_rd(readpgm(get_Z() + (sram[0x5B] << 16))); break;
         case ELPMRZ_: p = get_Z() + (sram[0x5B] << 16); put_rd(readpgm(p)); put_Z(p+1); cycles = 2; break;
 
-        // ------------ РАСШИРЕНИЯ -------------------------------------
-
-        /*
-        // Логические операции между (Z) и Rd
-        case LAC:
-
-            Z = get_Z();
-            put(Z, get(Z) & (get_rd() ^ 0xFF));
-            break;
-
-        case LAS:
-
-            Z = get_Z();
-            put(Z, get(Z) | get_rd());
-            break;
-
-        case LAT:
-
-            Z = get_Z();
-            put(Z, get(Z) ^ get_rd());
-            break;
-
-        // Обмен (Z) и Rd
-        case XCH:
-
-            p = get_Z();
-            r = get(p);
-            put(p, get_rd());
-            put_rd(r);
-            break;
-        */
-
+        // Прямой переход
         case JMP:
 
             pc = ((get_jmp() << 16) | fetch());
@@ -543,6 +512,25 @@ int AVR::step()
 
             push16(pc + 1);
             pc = ((get_jmp() << 16) | fetch());
+            cycles = 2;
+            break;
+
+        // Непрямой переход по адресу
+        case IJMP:
+
+            pc = get_Z();
+            break;
+
+        case EIJMP:
+
+            pc = get_Z() + (sram[0x5B] << 16);
+            break;
+
+        // Непрямой вызов процедуры
+        case ICALL:
+
+            push16(pc + 1);
+            pc     = get_Z();
             cycles = 2;
             break;
 
