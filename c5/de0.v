@@ -103,9 +103,9 @@ wire [ 8:0] sd_a;
 wire [ 7:0] sd_i, sd_o;
 wire        sd_w, sd_rw, sd_busy, sd_done, sd_command;
 // Роутер памяти
+wire [ 7:0] i8, s8;
 wire        m_sd = a >= 16'hFC00;
 wire        m_pt = a <= 16'h005F;
-wire [ 7:0] i8;
 wire [ 7:0] i = m_pt ? p : (m_sd ? s8 : i8);
 
 // Генератор частоты
@@ -141,6 +141,33 @@ avr AVR
     .vect       (vect)
 );
 
+// Связь процессора с периферией
+// -----------------------------------------------------------------------------
+
+io IO
+(
+    .clock      (clock_25),
+    .a          (a),
+    .o          (o),
+    .p          (p),
+    .r          (r),
+    .w          (w),
+    // -- Периферия
+    .p_vpage    (vpage),
+    .p_border   (vga_b),
+    .p_kdone    (kdone),
+    .p_ascii    (ascii),
+    .p_vblank   (vblank),
+    // -- SD
+    .sd_command (sd_command),
+    .sd_rw      (sd_rw),
+    .sd_lba     (sd_lba),
+    .sd_card    (sd_card),
+    .sd_error   (sd_error),
+    .sd_done    (sd_done),
+    .sd_busy    (sd_busy)
+);
+
 // Видеоадаптер
 // -----------------------------------------------------------------------------
 
@@ -156,24 +183,6 @@ vga A1
     .i          (vga_i),
     .border     (vga_b),
     .vblank     (vblank)
-);
-
-// Связь процессора с периферией
-// -----------------------------------------------------------------------------
-
-io IO
-(
-    .clock      (clock_25),
-    .a          (a),
-    .o          (o),
-    .p          (p),
-    .r          (r),
-    .w          (w),
-    .p_vpage    (vpage),
-    .p_border   (vga_b),
-    .p_kdone    (kdone),
-    .p_ascii    (ascii),
-    .p_vblank   (vblank)
 );
 
 // Клавиатура
@@ -222,8 +231,8 @@ sd SD
 // ---------------------------------------------------------------------
 
 p32 ROM(.clock(clock_100), .a(pc[13:0]), .q(ir));
-m64 RAM(.clock(clock_100), .a( a[15:0]), .q(i8), .d(o), .w(w), .ax({2'b10, vpage, vga_a[12:0]}), .qx(vga_i));
-m1  SDC(.clock(clock_100), .a( a[ 9:0]), .q(s8), .d(o), .w(w), .ax(sd_a), .qx(sd_i), .wx(sd_w), .dx(sd_o));
+m64 RAM(.clock(clock_100), .a( a[15:0]), .q(i8), .d(o), .w(w),        .ax({2'b10, vpage, vga_a[12:0]}), .qx(vga_i));
+m1  SDC(.clock(clock_100), .a( a[ 9:0]), .q(s8), .d(o), .w(w & m_sd), .ax(sd_a), .qx(sd_i), .wx(sd_w), .dx(sd_o));
 
 endmodule
 

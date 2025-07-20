@@ -5,12 +5,21 @@ module io
     input       [ 7:0]  o,
     input               r,
     input               w,
+    // SD CARD
+    output reg          sd_command,     // Отправка команды на SD
+    output reg          sd_rw,          // 0 READ; 1 WRITE
+    output reg  [31:0]  sd_lba,         // Указать адрес сектора
+    input       [ 1:0]  sd_card,        // Определенный тип карты
+    input       [ 3:0]  sd_error,       // В случае если появилась ошибка
+    input               sd_done,        // Пришел ответ о выполненной задаче от SD
+    input               sd_busy,        // =1 Карта занята в работе
+    // ПЕРИФЕРИЯ
     output reg          p_vpage,        // Видеостраница 0=$8000, 1=$A000
     output reg  [ 2:0]  p_border,
     input               p_vblank,       // 60 Hz
     input               p_kdone,
     input       [ 7:0]  p_ascii,
-    output reg  [ 7:0]  p               // A=20..5Fh
+    output reg  [ 7:0]  p               // Информация с порта по адресу A=[20..5Fh]
 );
 
 // Сохраненные значения
@@ -55,6 +64,10 @@ begin
     case (a)
     16'h20: p_border <= o[2:0];
     16'h21: p_vpage  <= o[0];
+    16'h22: sd_lba[ 7:0]  <= o;
+    16'h23: sd_lba[15:8]  <= o;
+    16'h24: sd_lba[23:16] <= o;
+    16'h25: sd_lba[31:24] <= o;
     endcase
 
     // Пришел сигнал об окончании кадра
