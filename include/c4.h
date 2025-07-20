@@ -199,7 +199,44 @@ int input(char* str, int max = 16)
             }
 
             // Нарисовать курсор на новой позиции
-            blink = 1; pattr(x, y, 0x70);
+            blink = 1;
+            bcnt  = 0;
+            pattr(x, y, 0x70);
         }
     }
+}
+
+// Распечатать на экране целочисленное значение
+int print(int x)
+{
+    char b[16];
+
+    int a, i = 16;
+
+    if (x < 0) { x = -x; tchar('-'); }
+
+    do {
+        a  = x % 10;
+        x /= 10;
+        b[--i] = '0'+a;
+    }
+    while (x);
+
+    // Печать числа в обратном порядке
+    for (int j = i; j < 16; j++) tchar(b[j]);
+
+    return 16 - i;
+}
+
+// Прочесть число из потока данных
+int parseInt(char* s)
+{
+    int a = 0;
+    int i = 0;
+    int m = 1;
+    if (s[i] == '-') { m = -1; i++; }
+    while (s[i] >= '0' && s[i] <= '9' && s[i]) {
+        a = (10*a) + (s[i++]-'0');
+    }
+    return a*m;
 }

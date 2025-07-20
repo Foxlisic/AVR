@@ -3,12 +3,11 @@
 
 int main()
 {
-    char b[16];
-
     cls();
 
-    input(b,16);
-    loc(0,1); print(b); tchar('.');
-
+    char b[16]; input(b,15);
+    int i = parseInt(b);
+    tchar(10);
+    print(i);
     stop;
 }
