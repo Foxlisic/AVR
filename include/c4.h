@@ -49,9 +49,17 @@ void pchar(byte x, byte y, char a)
 // Вывод символа в режиме телетайпа
 void tchar(char a)
 {
-    pchar(c4._locx, c4._locy, a);
-    c4._locx++;
-    if (c4._locx >= 32) { c4._locx = 0; c4._locy++; }
+    if (a == 10) {
+        c4._locx = 32;
+    } else {
+        pchar(c4._locx, c4._locy, a);
+        c4._locx++;
+    }
+
+    if (c4._locx >= 32) {
+        c4._locx = 0;
+        c4._locy++;
+    }
 }
 
 // Пропечать строки

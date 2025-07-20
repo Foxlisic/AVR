@@ -3,12 +3,7 @@
 
 int main()
 {
-    cls(0x07);
-
-    for (;;) {
-
-        tchar(getch());
-    }
-
+    cls();
+    for (;;) { tchar(getch()); }
     stop;
 }
