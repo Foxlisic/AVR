@@ -48,8 +48,8 @@ wire        clock_25, clock_100, locked;
 wire [15:0] a, pc, ir;
 wire [ 7:0] o, p;
 wire        w, r;
-reg         intr;
-reg  [ 2:0] vect;
+wire        intr;
+wire [ 2:0] vect;
 wire [ 7:0] ascii;
 wire        kdone;
 wire [ 7:0] i8, i4, i2;
@@ -57,6 +57,7 @@ wire [ 7:0] i = pt ? p : w8 ? i8 : w4 ? i4 : w2 ? i2 : 8'h00;
 wire [12:0] vga_a;
 wire [ 7:0] vga_i;
 wire [ 2:0] vga_b;
+wire        vblank;
 
 // Роутер памяти
 // -----------------------------------------------------------------------------
@@ -107,7 +108,8 @@ io IO
     .w          (w),
     .p_border   (vga_b),
     .p_kdone    (kdone),
-    .p_ascii    (ascii)
+    .p_ascii    (ascii),
+    .p_vblank   (vblank)
 );
 
 // Видеоадаптер
@@ -122,7 +124,8 @@ vga UVGA
     .vs         (VGA_VS),
     .a          (vga_a),
     .i          (vga_i),
-    .border     (vga_b)
+    .border     (vga_b),
+    .vblank     (vblank)
 );
 
 // Клавиатура

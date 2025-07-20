@@ -7,7 +7,8 @@ uint8_t AVR::get(uint16_t addr)
     {
         case 0x20: return key_code;
         case 0x21: return millis;
-        case 0x22: dv = key_press; key_press = 0; return dv;
+        case 0x22: dv = key_press;  key_press = 0; return dv;
+        case 0x23: dv = vblank;     vblank = 0; return dv;
     }
 
     return dv;
@@ -80,7 +81,7 @@ AVR::AVR(int argc, char** argv)
 
     // Создание окна
     SDL_ClearError();
-    sdl_window          = SDL_CreateWindow("FoxAVR Machine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scale*width, scale*height, SDL_WINDOW_SHOWN);
+    sdl_window          = SDL_CreateWindow("Machine of AVR: Fox Edition 2025", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, scale*width, scale*height, SDL_WINDOW_SHOWN);
     sdl_renderer        = SDL_CreateRenderer(sdl_window, -1, SDL_RENDERER_PRESENTVSYNC);
     screen_buffer       = (Uint32*) malloc(width * height * sizeof(Uint32));
     sdl_screen_texture  = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_BGRA32, SDL_TEXTUREACCESS_STREAMING, width, height);
@@ -130,6 +131,9 @@ int AVR::main()
 
             if (ms > 250000) { ms = 0; millis = (millis + 1) & 255; }
         }
+
+        // В конце кадра всегда обновляется
+        vblank = 1;
 
         // Обновить экран
         update_screen();

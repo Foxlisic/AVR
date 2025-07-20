@@ -75,6 +75,10 @@ void tchar(char a)
     if (c4._locx >= 32) {
         c4._locx = 0;
         c4._locy++;
+        if (c4._locy >= 24) {
+            c4._locy = 23;
+            // Прокрутить
+        }
     }
 }
 
@@ -91,6 +95,12 @@ byte getch()
 {
     while((inp(2) & 1) == 0);
     return inp(0);
+}
+
+// Ждать сигнала VBlank
+void vsync()
+{
+    while ( (inp(3) & 1) == 0 );
 }
 
 // Очистить экран и установить цвет борделя

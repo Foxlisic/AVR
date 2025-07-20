@@ -9,7 +9,7 @@ module vga
     output  reg [12:0]  a,
     input       [ 7:0]  i,
     input       [ 2:0]  border,
-    output  reg         vretrace
+    output  reg         vblank
 );
 // ---------------------------------------------------------------------
 // Тайминги для горизонтальной и вертикальной развертки
@@ -49,8 +49,8 @@ always @(posedge clock) begin
     {r, b, g} <= 3'b000;
 
     // Как только заканчивается рисование кадра, вызвать прерывание
-    vretrace <= 0;
-    if (xmax & y == vtb + vtv + vtf) vretrace <= 1;
+    vblank <= 0;
+    if (xmax & y == vtb + vtv + vtf) vblank <= 1;
 
     // Кадровая развертка
     x <= xmax ?         0 : x + 1;

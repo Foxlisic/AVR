@@ -142,7 +142,7 @@ vga A1
     .a          (vga_a),
     .i          (vga_i),
     .border     (vga_b),
-    .vretrace   (vblank)
+    .vblank     (vblank)
 );
 
 // Связь процессора с периферией
@@ -158,7 +158,8 @@ io IO
     .p_vpage    (vpage),
     .p_border   (vga_b),
     .p_kdone    (kdone),
-    .p_ascii    (ascii)
+    .p_ascii    (ascii),
+    .p_vblank   (vblank)
 );
 
 // Клавиатура

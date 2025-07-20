@@ -7,6 +7,10 @@ int main()
 {
     cls();
     loc(0,23); pstr(s1);
-    loc(0, 0); for (;;) { tchar(getch()); }
+    loc(0, 0);
+
+    for (;;) { tchar(getch()); }
+    // for (;;) { vsync(); tchar('x'); }
+
     stop;
 }
