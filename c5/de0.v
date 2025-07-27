@@ -89,6 +89,13 @@ wire        intr;
 // Клавиатура
 wire        hit, kdone;
 wire [ 7:0] kbd, ascii;
+// Мышь
+wire        ms_ready;
+wire [ 7:0] ms_dat, ms_kbd;
+wire        ms_cmd, ms_hit;
+wire [11:0] x, y;
+wire [ 2:0] btn;
+wire        recv;
 // Видеоадаптер
 wire [12:0] vga_a;
 wire [ 7:0] vga_i;
@@ -155,9 +162,15 @@ io IO
     // -- Периферия
     .p_vpage    (vpage),
     .p_border   (vga_b),
+    .p_vblank   (vblank),
+    // -- Клавиатура
     .p_kdone    (kdone),
     .p_ascii    (ascii),
-    .p_vblank   (vblank),
+    // -- Мышь
+    .p_msx      (x),
+    .p_msy      (y),
+    .p_btn      (btn),
+    .p_recv     (recv),
     // -- SD
     .sd_command (sd_command),
     .sd_rw      (sd_rw),
@@ -185,9 +198,10 @@ vga A1
     .vblank     (vblank)
 );
 
-// Клавиатура
+// Клавиатура и мышь
 // -----------------------------------------------------------------------------
 
+// Клава
 kb K1
 (
     .clock      (clock_25),
@@ -198,6 +212,39 @@ kb K1
     .kbd        (kbd),
     .kdone      (kdone),
     .ascii      (ascii)
+);
+
+// Мышь
+kb K2
+(
+    .clock      (clock_25),
+    .reset_n    (reset_n),
+    .ps_clk     (PS2_CLK2),
+    .ps_dat     (PS2_DAT2),
+    .hit        (ms_hit),
+    .kbd        (ms_kbd),
+    .cmd        (ms_cmd),
+    .dat        (ms_dat),
+    .ready      (ms_ready)
+);
+
+// Контроллер
+mouse M1
+(
+    .clock   (clock_25),
+    .reset_n (reset_n),
+    .xmax    (256),
+    .ymax    (192),
+    .x       (x),
+    .y       (y),
+    .ps_clk  (PS2_CLK2),
+    .cmd     (ms_cmd),
+    .dat     (ms_dat),
+    .ready   (ms_ready),
+    .hit     (ms_hit),
+    .kbd     (ms_kbd),
+    .btn     (btn),
+    .recv    (recv)
 );
 
 // Карта SDRAM
@@ -240,3 +287,4 @@ endmodule
 `include "../io.v"
 `include "../kb.v"
 `include "../sd.v"
+`include "../mouse.v"
