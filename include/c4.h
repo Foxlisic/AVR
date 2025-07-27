@@ -240,3 +240,51 @@ int parseInt(char* s)
     }
     return a*m;
 }
+
+// Рисование линии на экране (256,192)
+void line(int x1, int y1, int x2, int y2, byte c)
+{
+    heapvp;
+
+    int signx  = x1 < x2 ? 1 : -1;
+    int signy  = y1 < y2 ? 1 : -1;
+    int deltax = x2 > x1 ? x2 - x1 : x1 - x2;
+    int deltay = y2 > y1 ? y2 - y1 : y1 - y2;
+    int error  = deltax - deltay;
+    int error2;
+
+    // Первичное позиционирование
+    int ad = (x1 >> 3) + (32*y1);
+    byte m = 0x80 >> (x1 & 7);
+
+    // Перебирать до конца
+    for (;;) {
+
+        // PSET (x1,y1),c
+        if (c) vm[ad] |= m; else vm[ad] &= ~m;
+
+        error2 = 2 * error;
+
+        // Выйти из цикла при достижении конца линии
+        if (x1 == x2 && y1 == y2) break;
+
+        // Перемещение точки по X++, X--
+        if (error2 > -deltay) {
+
+            x1    += signx;
+            error -= deltay;
+
+            if (signx > 0) { if (m == 0x01) { ad++; m = 0x80; } else { m >>= 1; } }
+            else           { if (m == 0x80) { ad--; m = 0x01; } else { m <<= 1; } }
+        }
+
+        // Перемещение точки по Y++, Y--
+        if (error2 < deltax) {
+
+            y1    += signy;
+            error += deltax;
+
+            ad = signy > 0 ? ad + 32 : ad - 32;
+        }
+    }
+}

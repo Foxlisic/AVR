@@ -61,9 +61,9 @@ begin
     // Чтение из порта
     if (r)
     case (a)
-    16'h22: r_ascii  <= 0;
-    16'h23: r_vblank <= 0;
-    16'h24: r_done   <= 0;
+    16'h22: r_ascii  <= 0;      // Данные от клавиатуры получены
+    16'h23: r_vblank <= 0;      // 60 Hz VBlank
+    16'h24: r_done   <= 0;      // Данные успешно получены или записаны
     endcase
 
     // Запись в порт
@@ -81,11 +81,11 @@ begin
     // Пришел сигнал об окончании кадра
     if (p_vblank) begin r_vblank <= 1; end
 
-    // Клавиша принята с клавиатуры
-    if (p_kdone) begin i_ascii <= p_ascii; r_ascii <= 1; end
-
     // Пришел сигнал DONE
-    if (sd_done) begin r_done <= 1; end
+    if (sd_done)  begin r_done <= 1; end
+
+    // Клавиша принята с клавиатуры
+    if (p_kdone)  begin r_ascii <= 1; i_ascii <= p_ascii; end
 
     // Счетчик 100 Гц
     if (t_counter == 249999)
