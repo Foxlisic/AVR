@@ -1,5 +1,7 @@
 #include "zxfont.h"
 
+STRING(PSETDecl, "\x80\x40\x20\x10\x08\x04\x02\x01");
+
 // В зависимости от страницы будет писать в видео память
 #define heapvp heap(vm, (c4._vpage ? 0xA000 : 0x8000))
 
@@ -241,6 +243,17 @@ int parseInt(char* s)
     return a*m;
 }
 
+// Рисовать точку на экране (256,192)
+void pset(byte x, byte y, byte c)
+{
+    heapvp;
+
+    int ad = (x >> 3) + (32*y);
+    byte m = LPM(PSETDecl[x & 7]);
+
+    if (c & 1) vm[ad] |= m; else vm[ad] &= ~m;
+}
+
 // Рисование линии на экране (256,192)
 void line(int x1, int y1, int x2, int y2, byte c)
 {
@@ -255,13 +268,13 @@ void line(int x1, int y1, int x2, int y2, byte c)
 
     // Первичное позиционирование
     int ad = (x1 >> 3) + (32*y1);
-    byte m = 0x80 >> (x1 & 7);
+    byte m = LPM(PSETDecl[x1 & 7]);
 
     // Перебирать до конца
     for (;;) {
 
         // PSET (x1,y1),c
-        if (c) vm[ad] |= m; else vm[ad] &= ~m;
+        if (c & 1) vm[ad] |= m; else vm[ad] &= ~m;
 
         error2 = 2 * error;
 
