@@ -4,6 +4,10 @@
 int main()
 {
     cls();
-    line(0,0,255,191,1);
+
+    for (;;) {
+        if (btn(1)) pset(mx(),my(),1);
+    }
+
     stop;
 }

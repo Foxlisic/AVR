@@ -21,53 +21,33 @@ public:
 // =============================================================================
 
 // Установка номера видеостраницы для чтения
-inline void vpage(byte c)
-{
-    outp(0x01, c & 1);
-}
+inline void vpage(byte c) { outp(0x01, c & 1); }
 
 // Установить текущую видеостраницу для записи
-inline void cpage(byte c)
-{
-    c4._vpage = c & 1;
-}
+inline void cpage(byte c) { c4._vpage = c & 1; }
 
 // Проверить сигнал VBlank
-inline byte vblank()
-{
-    return (inp(3) & 1);
-}
+inline byte vblank() { return (inp(3) & 1); }
 
 // Есть ли нажатие клавиши?
-inline byte kbhit()
-{
-    return (inp(2) & 1);
-}
+inline byte kbhit() { return (inp(2) & 1); }
 
 // Цвет бордера
-inline void border(byte c)
-{
-    outp(0x00, c);
-}
+inline void border(byte c) { outp(0x00, c); }
 
 // Цветовая гамма
-inline void color(byte c)
-{
-    c4._color = c;
-}
+inline void color(byte c) { c4._color = c; }
 
 // Установка курсора для печати
-inline void loc(byte x, byte y)
-{
-    c4._locx = x;
-    c4._locy = y;
-}
+inline void loc(byte x, byte y) { c4._locx = x; c4._locy = y; }
 
 // ASCII-код
-inline byte keycode()
-{
-    return inp(0);
-}
+inline byte keycode() { return inp(0); }
+
+// Указатель мыши
+inline byte mx()  { return inp(5); }
+inline byte my()  { return inp(6); }
+inline byte btn(byte m) { return inp(7) & m; }
 
 // Реализация методов
 // =============================================================================

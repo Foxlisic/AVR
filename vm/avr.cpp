@@ -1,31 +1,4 @@
-// Чтение из памяти
-uint8_t AVR::get(uint16_t addr)
-{
-    uint8_t dv = sram[addr];
 
-    switch (addr)
-    {
-        case 0x20: return key_code;
-        case 0x21: return millis;
-        case 0x22: dv = key_press;  key_press = 0; return dv;
-        case 0x23: dv = vblank;     vblank = 0; return dv;
-    }
-
-    return dv;
-}
-
-// Сохранение в память
-void AVR::put(uint16_t addr, uint8_t value)
-{
-    sram[addr] = value;
-
-    switch (addr)
-    {
-        case 0x20: update_border(value); break;
-        case 0x21: vpage = value & 1; break;
-        case 0x5F: byte_to_flag(value);
-    }
-}
 
 AVR::AVR(int argc, char** argv)
 {
@@ -114,6 +87,47 @@ int AVR::main()
                 case SDL_QUIT:      destroy(); return 0;
                 case SDL_KEYDOWN:   key_code = keyboard_ascii(evt, 1); key_press = !!key_code; break;
                 case SDL_KEYUP:     keyboard_ascii(evt, 0); break;
+
+                // Отслеживание движения мыши
+                case SDL_MOUSEMOTION:
+
+                    mouse_x = evt.motion.x;
+                    mouse_y = evt.motion.y;
+                    mouse_btn |= 0x80;
+
+                    mouse_x = (mouse_x >> 2) - 32;
+                    mouse_y = (mouse_y >> 2) - 4;
+
+                    if      (mouse_x < 0)   mouse_x = 0;
+                    else if (mouse_x > 255) mouse_x = 255;
+                    if      (mouse_y < 0)   mouse_y = 0;
+                    else if (mouse_y > 191) mouse_y = 191;
+
+                    break;
+
+                case SDL_MOUSEBUTTONDOWN:
+
+                    switch (evt.button.button) {
+
+                        case SDL_BUTTON_LEFT:   mouse_btn |= 1; break;
+                        case SDL_BUTTON_RIGHT:  mouse_btn |= 2; break;
+                        case SDL_BUTTON_MIDDLE: mouse_btn |= 4; break;
+                    }
+
+                    mouse_btn |= 0x80;
+                    break;
+
+                case SDL_MOUSEBUTTONUP:
+
+                    switch (evt.button.button) {
+
+                        case SDL_BUTTON_LEFT:   mouse_btn &= ~1; break;
+                        case SDL_BUTTON_RIGHT:  mouse_btn &= ~2; break;
+                        case SDL_BUTTON_MIDDLE: mouse_btn &= ~4; break;
+                    }
+
+                    mouse_btn |= 0x80;
+                    break;
             }
         }
 

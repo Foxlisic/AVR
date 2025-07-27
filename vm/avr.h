@@ -103,6 +103,8 @@ protected:
     uint8_t     key_code  = 0, key_press = 0, key_shift = 0;
     uint8_t     flash_cnt = 0, flash = 0;
 
+    int         mouse_x = 0, mouse_y = 0, mouse_btn = 0;
+
     // Отладчик
     char        ds_line[256];
     int         ds_enable = 0;
