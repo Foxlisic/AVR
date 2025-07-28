@@ -114,6 +114,7 @@ protected:
     uint8_t     border_color;
     uint8_t     vconfig;
     uint32_t    millis;
+    uint32_t    lba = 0, sdstat = 0;
 
     // Процессор
     int         vpage = 0, vblank = 0;

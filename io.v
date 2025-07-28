@@ -48,7 +48,7 @@ case (a)
 16'h21:  p = i_timer;           // Таймер (100 Гц)
 16'h22:  p = r_ascii;           // Была получена кнопка? Сброс при чтении
 16'h23:  p = r_vblank;          // Получен VBLank
-16'h24:  p = {sd_busy, r_done, sd_card, sd_error}; // Статус карточки
+16'h24:  p = {r_done, sd_busy, sd_card, sd_error}; // Статус карточки
 16'h25:  p = p_msx[7:0];        // Mouse.X
 16'h26:  p = p_msy[7:0];        // Mouse.Y
 16'h27:  p = {r_mouse, 4'b0000, p_btn[2:0]}; // Mouse.Btn

@@ -101,14 +101,6 @@ int pstr(const unsigned char* s)
     return i;
 }
 
-// Печать строки из памяти RAM
-int print(const char* s)
-{
-    int i = 0;
-    while (s[i]) tchar(s[i++]);
-    return i;
-}
-
 // Ждать нажатия кнопки и читать ASCII
 byte getch()
 {
@@ -188,37 +180,52 @@ int input(char* str, int max = 16)
     }
 }
 
-// Распечатать на экране целочисленное значение
-int print(int x)
+// Печать строки из памяти RAM
+int print(const char* s)
 {
-    char b[16];
+    int i = 0;
+    while (s[i]) tchar(s[i++]);
+    return i;
+}
 
-    int a, i = 16;
+// Распечатать на экране целочисленное значение
+int print(int x, int radix = 10, int size = 0)
+{
+    char b[32];
+
+    int a, i = 32;
 
     if (x < 0) { x = -x; tchar('-'); }
 
     do {
-        a  = x % 10;
-        x /= 10;
-        b[--i] = '0'+a;
+
+        a  = x % radix;
+        x /= radix;
+
+        if (a > 9) a += 7;
+        b[--i] = '0' + a;
     }
     while (x);
 
-    // Печать числа в обратном порядке
-    for (int j = i; j < 16; j++) tchar(b[j]);
+    // Реальная длина числа
+    int len = 32-i;
 
-    return 16 - i;
+    // Печать числа в обратном порядке
+    for (int j = len; j < size; j++) tchar('0');
+    for (int j = i;   j < 32;   j++) tchar(b[j]);
+
+    return len;
 }
 
 // Прочесть число из потока данных
-int parseInt(char* s)
+int parseInt(char* s, int radix = 10)
 {
     int a = 0;
     int i = 0;
     int m = 1;
     if (s[i] == '-') { m = -1; i++; }
     while (s[i] >= '0' && s[i] <= '9' && s[i]) {
-        a = (10*a) + (s[i++]-'0');
+        a = (radix*a) + (s[i++]-'0');
     }
     return a*m;
 }
@@ -280,4 +287,24 @@ void line(int x1, int y1, int x2, int y2, byte c)
             ad = signy > 0 ? ad + 32 : ad - 32;
         }
     }
+}
+
+// Установка номера сектора
+void sd_lba(dword lba)
+{
+    for (int i = 0x02; i <= 0x05; i++) {
+        outp(i, lba);
+        lba >>= 8;
+    }
+}
+
+// Чтение сектора с диска в Address=FC00h
+byte read(dword lba)
+{
+    while (inp(4) & 0x40);  // Ждать BSY=0
+    sd_lba(lba);            // Установка сектора
+    outp(0x06, 0);          // Команда чтения
+    nop;                    // Реакция BSY через 2Т
+    while (inp(4) & 0x40);  // Ждать BSY=0
+    return inp(4) & 15;     // Если будет ошибка, то != 0
 }

@@ -106,7 +106,7 @@ wire        vpage;
 wire [31:0] sd_lba;
 wire [ 3:0] sd_error;
 wire [ 1:0] sd_card;
-wire [ 8:0] sd_a;
+wire [ 9:0] sd_a;
 wire [ 7:0] sd_i, sd_o;
 wire        sd_w, sd_rw, sd_busy, sd_done, sd_command;
 // Роутер памяти

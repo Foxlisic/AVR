@@ -45,6 +45,7 @@ always @(posedge clock)
 if (reset_n == 0) begin
     t       <= 0;
     busy    <= 0;
+    card    <= 0;
 `ifdef ICARUS
     timeout <= 1;
 `else
@@ -65,7 +66,6 @@ end else begin
         mosi <= 0;
         busy <= 0;
         sclk <= 0;
-        card <= 0;
 
         // Сброс счетчиков
         {c0, c1, c2, c3, c4} <= 0;
@@ -123,7 +123,7 @@ end else begin
 
     endcase
 
-    // Выполнение команды к SD, возврат на метку R1
+    // Выполнение команды (cmd,arg) к SD, возврат на метку R1
     COMMAND: case (c1)
 
         // FOR i=0 TO 4095: IF (GET() == 0xFF) BREAK; NEXT i
@@ -141,7 +141,14 @@ end else begin
         // Отослать команду 8 бит
         3: begin t <= FETCH; dw <= {2'b01, cmd}; c1 <= 4; end
         // Отослать аргумент 32 бит
-        4, 5, 6, 7: begin t <= FETCH; dw <= arg[31:24]; arg <= {arg[23:0], arg[31:24]}; c1 <= c1 + 1; end
+        4, 5, 6, 7: begin
+
+            t   <= FETCH;
+            dw  <= arg[31:24];
+            arg <= {arg[23:0], arg[31:24]};
+            c1  <= c1 + 1;
+
+        end
         // Отсылка CRC
         8: begin
 
@@ -171,7 +178,7 @@ end else begin
     INIT: case (c0)
 
         // Отослать CMD0(0)
-        0: begin c0 <= 1; r1 <= INIT; t <= COMMAND; {cmd, arg} <= 0; end
+        0: begin c0 <= 1; r1 <= INIT; t <= COMMAND; {card, cmd, arg} <= 0; end
         // Проверить на R=01h, если неправильно, то ошибка #3
         1: begin
 

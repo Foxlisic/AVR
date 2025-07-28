@@ -9,6 +9,7 @@
 
 // Ссылка на пустой адрес
 #define NULL    ((void*)0)
+#define nop     asm volatile("nop");
 #define brk     asm volatile("sleep"); // break
 #define stop    for (;;);
 
@@ -22,6 +23,7 @@
 // Указатель на память
 #define heap(x,y)   volatile byte* x  = (byte*)y;
 #define heapvm      volatile byte* vm = (byte*)0x8000;
+#define heapfs      volatile byte* fs = (byte*)0xFC00;
 
 // Чтение и запись в порт
 inline byte inp(int port) { return ((volatile byte*)0x20)[port]; }
