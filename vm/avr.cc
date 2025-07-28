@@ -45,7 +45,7 @@ void AVR::put(uint16_t addr, uint8_t value)
         case 0x23: lba = (lba & 0xFFFF00FF) | (value << 8); break;
         case 0x24: lba = (lba & 0xFF00FFFF) | (value << 16); break;
         case 0x25: lba = (lba & 0x00FFFFFF) | (value << 24); break;
-        case 0x26: sdstat = 0xB0; break; // CARD=3, BSY=0, READY=1, ERR=0
+        case 0x26: sdstat = sd_request(value); break; // CARD=3, BSY=0, READY=1, ERR=0 :: 0xB0
         case 0x5F: byte_to_flag(value);
     }
 }

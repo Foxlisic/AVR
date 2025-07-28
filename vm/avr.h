@@ -139,6 +139,7 @@ public:
     void        update_border(int c);
     void        disassemble();
     int         keyboard_ascii(SDL_Event, int);
+    int         sd_request(int);
 
     // Объявление процессора
     void        reset();

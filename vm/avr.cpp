@@ -328,3 +328,27 @@ int AVR::keyboard_ascii(SDL_Event event, int press)
 
     return 0;
 }
+
+// Запрос на чтение или запись на карточку
+int AVR::sd_request(int type)
+{
+    FILE* fp = fopen("sd.img", "rb+");
+
+    // Если нет, то создать новый файл
+    if (!fp) {
+        fp = fopen("sd.img", "w");
+        if (fp) { fclose(fp); }
+        fp = fopen("sd.img", "rb+");
+    }
+
+    if (fp) {
+        fseek(fp, 512*lba, SEEK_SET);
+        if (type & 1) {
+            fwrite(sram + 0xFC00, 1, 512, fp);
+        } else {
+            fread(sram + 0xFC00, 1, 512, fp);
+        }
+        fclose(fp);
+    }
+    return 0xB0;
+}

@@ -163,13 +163,18 @@ int input(char* str, int max = 16)
             }
             // Нажат backspace
             else if (k == 8) {
+
                 if (len > 0) { // Мы на начале строки
                     pchar(--x, y, 0); str[--i] = 0; len--;
                 }
             }
             // Нажата ASCII клавиша
             else if (len < max) {
-                pchar(x++, y, k); str[i++] = k; str[i] = 0; len++;
+
+                pchar(x++, y, k);
+                str[i++] = k;
+                str[i]   = 0;
+                len++;
             }
 
             // Нарисовать курсор на новой позиции
@@ -290,7 +295,7 @@ void line(int x1, int y1, int x2, int y2, byte c)
 }
 
 // Установка номера сектора
-void sd_lba(dword lba)
+void lba(dword lba)
 {
     for (int i = 0x02; i <= 0x05; i++) {
         outp(i, lba);
@@ -299,10 +304,10 @@ void sd_lba(dword lba)
 }
 
 // Чтение сектора с диска в Address=FC00h
-byte read(dword lba)
+byte read(dword n)
 {
     while (inp(4) & 0x40);  // Ждать BSY=0
-    sd_lba(lba);            // Установка сектора
+    lba(n);                 // Установка сектора
     outp(0x06, 0);          // Команда чтения
     nop;                    // Реакция BSY через 2Т
     while (inp(4) & 0x40);  // Ждать BSY=0
