@@ -13,5 +13,6 @@ avr.log
 incremental_db
 output_files
 db/
+sd.img
 c5_pin_model_dump.txt
 de0_assignment_defaults.qdf
